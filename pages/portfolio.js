@@ -110,7 +110,7 @@ export default function Portfolio() {
 
   const [images, setImages] = useState([]);
   const [activeIndex, setActiveIndex] = useState(null);
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -119,8 +119,16 @@ export default function Portfolio() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('portfolio-theme');
-      if (saved) setTheme(saved);
-      else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) setTheme('light');
+      if (saved) {
+        setTheme(saved);
+      } else {
+        // Default to light mode (day), but respect system preference for dark
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          setTheme('dark');
+        } else {
+          setTheme('light');
+        }
+      }
     } catch (e) {}
   }, []);
   useEffect(() => { try { localStorage.setItem('portfolio-theme', theme); } catch (e) {} }, [theme]);
@@ -144,38 +152,38 @@ export default function Portfolio() {
     } else {
       setImages([
         'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/Charge_On_Th_go_cf86ck.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/no_car_no_blur_jnjbyu.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/2_This_is_the_one_kw6cwf.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/44_No_more_bills_for_lewis_1_imj9en.png',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556262/69.1_Dominic_Chicale_poster_noo_ttxt_acupt0.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/Did_He_Win_2_nbxoke.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/44_Gene_Gotti_zapxim.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556258/tony_natasi_king_pimp_of_ny_uhgf64.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556255/9_GOTTI_JR_VS_SAMMY_zr7bge.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/43_all_the_bosses_men_enhanced_npn7yr.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556255/62_Anthony_Arilotta_unleased_vugmn5.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/24.1_Ai_thumbnail_omhxm7.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/30.4_Meter_New_znoai2.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/24.3_AI_glasses_thumbnail_swlh96.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/30.3_Library_2_updq5p.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/42_All_the_bosses_men_lidsw0.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556253/30.2_13_Millionv2_d4fuqg.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556253/29.2_Ai_Recommended_v2_ninsph.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/26.3_Lawn_Mower_isiafd.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556252/29.4_Dominated_2_gnlpee.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/29.1_King_New_vsfdgu.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556252/28.2_Is_It_Enough_ebznfh.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/28.4_Bad_Good_cvh0wo.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/28.3_Quality_Scale_New_ijxz2r.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556250/12_Motor_Reveal_red_mhl6lc.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556247/8_Phillip_Crawford_Jr_aw8pv9.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556247/7_Peter_Pasta_hzhhyt.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556245/9_Alpha_vs_Warrior_qqpvja.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556244/20_Anthony_Arillotta_huhuds.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556242/5.2_Chian_saw_fkyi0o.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556241/4.1_segway2_isszi6.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556240/3.1_Upgrade_u1au8z.jpg',
-        'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556238/3_Tony_pro_ghoqae.jpg'
+       'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556238/3_Tony_pro_ghoqae.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556240/3.1_Upgrade_u1au8z.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556241/4.1_segway2_isszi6.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556242/5.2_Chian_saw_fkyi0o.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556244/20_Anthony_Arillotta_huhuds.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556245/9_Alpha_vs_Warrior_qqpvja.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556247/7_Peter_Pasta_hzhhyt.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556247/8_Phillip_Crawford_Jr_aw8pv9.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556250/12_Motor_Reveal_red_mhl6lc.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/28.3_Quality_Scale_New_ijxz2r.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/28.4_Bad_Good_cvh0wo.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556252/28.2_Is_It_Enough_ebznfh.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/29.1_King_New_vsfdgu.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556252/29.4_Dominated_2_gnlpee.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556251/26.3_Lawn_Mower_isiafd.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556253/29.2_Ai_Recommended_v2_ninsph.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556253/30.2_13_Millionv2_d4fuqg.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/42_All_the_bosses_men_lidsw0.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/30.3_Library_2_updq5p.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/24.3_AI_glasses_thumbnail_swlh96.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/30.4_Meter_New_znoai2.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/24.1_Ai_thumbnail_omhxm7.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556255/62_Anthony_Arilotta_unleased_vugmn5.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/43_all_the_bosses_men_enhanced_npn7yr.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556255/9_GOTTI_JR_VS_SAMMY_zr7bge.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556258/tony_natasi_king_pimp_of_ny_uhgf64.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556254/44_Gene_Gotti_zapxim.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556256/Did_He_Win_2_nbxoke.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556262/69.1_Dominic_Chicale_poster_noo_ttxt_acupt0.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/44_No_more_bills_for_lewis_1_imj9en.png',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/2_This_is_the_one_kw6cwf.jpg',
+'https://res.cloudinary.com/dim7qn23t/image/upload/v1763556259/no_car_no_blur_jnjbyu.jpg'
       ]);
     }
   }, []);
