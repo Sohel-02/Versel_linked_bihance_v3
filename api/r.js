@@ -141,10 +141,23 @@ module.exports = async (req, res) => {
     }
 
     // Issue redirect (HTTP 302)
+    // Preserve rid parameter in redirect URL if provided
+    let redirectUrl = dest;
+    if (rid && rid.trim()) {
+      try {
+        const url = new URL(dest);
+        url.searchParams.set('rid', rid.trim());
+        redirectUrl = url.toString();
+      } catch (e) {
+        // If URL parsing fails, keep original dest
+        redirectUrl = dest;
+      }
+    }
+
     res.statusCode = 302;
-    res.setHeader('Location', dest);
+    res.setHeader('Location', redirectUrl);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.end(`<html><body>Redirecting… If you are not redirected automatically, <a href="${escapeHtml(dest)}">click here</a>.</body></html>`);
+    res.end(`<html><body>Redirecting… If you are not redirected automatically, <a href="${escapeHtml(redirectUrl)}">click here</a>.</body></html>`);
   } catch (err) {
     console.error('redirect error', err);
     try {
