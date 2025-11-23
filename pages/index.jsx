@@ -55,8 +55,8 @@ export default function Home(){
                   {s.features.slice(0,3).map((f,i) => <li key={i}>• {f}</li>)}
                 </ul>
                 <div className="mt-4 flex items-center justify-between">
-                  <Link href={`/services/${s.slug}`}>
-                    <a className="text-accent font-semibold">Learn more →</a>
+                  <Link href={`/services/${s.slug}`} className="text-accent font-semibold">
+                    Learn more →
                   </Link>
                   <a href={`#${s.slug}`} className="text-sm text-gray-400">Showcase</a>
                 </div>
