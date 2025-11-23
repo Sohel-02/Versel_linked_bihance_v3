@@ -122,14 +122,13 @@ export default function Portfolio() {
       if (saved) {
         setTheme(saved);
       } else {
-        // Default to light mode (day), but respect system preference for dark
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          setTheme('dark');
-        } else {
-          setTheme('light');
-        }
+        // Always default to light mode (day mode) on mobile and desktop
+        setTheme('light');
       }
-    } catch (e) {}
+    } catch (e) {
+      // If localStorage fails, default to light mode
+      setTheme('light');
+    }
   }, []);
   useEffect(() => { try { localStorage.setItem('portfolio-theme', theme); } catch (e) {} }, [theme]);
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
@@ -288,7 +287,19 @@ export default function Portfolio() {
               <div className="px-4 py-4 space-y-3">
                 <a href="#gallery" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md nav-link-mobile">Work</a>
                 <a href="#about" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md nav-link-mobile">About</a>
-                <div className="pt-2 border-t border-white/6">
+                <div className="pt-2 border-t border-white/6 flex flex-col gap-2">
+                  <button onClick={toggleTheme} aria-label="Toggle theme" className="flex items-center justify-center gap-2 px-4 py-2 rounded-full muted-bg hover:muted-bg-hover transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="block">
+                      {theme === 'dark' ? (
+                        <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="#FFDDDE" />
+                      ) : (
+                        <g>
+                          <circle cx="12" cy="12" r="4" fill="#FFDDDE" />
+                        </g>
+                      )}
+                    </svg>
+                    <span className="text-xs muted-strong">{theme === 'dark' ? 'Night' : 'Day'}</span>
+                  </button>
                   <a href={WHATSAPP_LINK} onClick={() => setMenuOpen(false)} className="block w-full text-center py-2 rounded-full bg-[var(--accent)] font-semibold">Contact on WhatsApp</a>
                 </div>
               </div>
@@ -561,7 +572,25 @@ export default function Portfolio() {
           .modern-case-desc { color: var(--muted); }
 
           @media (max-width:1024px){ .heading-layer{font-size:44px;} }
-          @media (max-width:640px){ .heading-layer{font-size:36px;} }
+          @media (max-width:640px){ 
+            .heading-layer{font-size:36px;} 
+            .stat { padding: 12px; }
+            .stat .num { font-size: 20px; }
+            .stat .lbl { font-size: 10px; }
+            .hero-thumb { min-height: 280px !important; }
+            .mini-thumbs { display: none; }
+          }
+          
+          /* Mobile-specific improvements */
+          @media (max-width: 768px) {
+            nav { padding: 0 12px; }
+            header { padding: 24px 0; }
+            .grid { gap: 16px !important; }
+            .tile-title { font-size: 12px; padding: 6px 10px; }
+            .modern-case { padding: 16px !important; }
+            .modern-case-title { font-size: 16px; }
+            .modern-about-card { padding: 20px !important; }
+          }
         `}</style>
       </div>
     </>

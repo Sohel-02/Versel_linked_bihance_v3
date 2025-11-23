@@ -623,10 +623,16 @@ export default function RealEstatePortfolio() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem('portfolio-theme');
-      if (saved) setTheme(saved);
-      else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
-      else setTheme('light');
-    } catch (e) {}
+      if (saved) {
+        setTheme(saved);
+      } else {
+        // Always default to light mode (day mode) on mobile and desktop
+        setTheme('light');
+      }
+    } catch (e) {
+      // If localStorage fails, default to light mode
+      setTheme('light');
+    }
   }, []);
 
   useEffect(() => {
@@ -721,10 +727,15 @@ export default function RealEstatePortfolio() {
           {menuOpen && (
             <div className="md:hidden border-t border-gray-100 bg-white">
               <div className="px-4 py-4 space-y-3">
-                <a href="#services" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md">Services</a>
-                <a href="#showcase" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md">Showcase</a>
-                <a href="#why" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md">Why Choose Me</a>
-                <a href={WHATSAPP_LINK} onClick={() => setMenuOpen(false)} className="block w-full text-center py-2 rounded-full bg-red-500 text-white font-semibold">Contact on WhatsApp</a>
+                <a href="#services" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Services</a>
+                <a href="#showcase" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Showcase</a>
+                <a href="#why" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Why Choose Me</a>
+                <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
+                  <button onClick={toggleTheme} aria-label="Toggle theme" className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700">
+                    <span className="text-sm">{theme === 'dark' ? 'Night' : 'Day'}</span>
+                  </button>
+                  <a href={WHATSAPP_LINK} onClick={() => setMenuOpen(false)} className="block w-full text-center py-2 rounded-full bg-red-500 text-white font-semibold">Contact on WhatsApp</a>
+                </div>
               </div>
             </div>
           )}
@@ -986,6 +997,54 @@ export default function RealEstatePortfolio() {
         /* Prevent any overlay or z-index issues in video modal */
         :global(.video-container) {
           isolation: isolate;
+        }
+        
+        /* Mobile-specific improvements */
+        @media (max-width: 768px) {
+          nav { padding: 0 12px; }
+          header { padding: 24px 0 !important; }
+          .hero-video { min-height: 200px !important; }
+          .video-embed { min-height: 140px !important; }
+          
+          h1 { font-size: 28px !important; line-height: 1.2 !important; }
+          h2 { font-size: 24px !important; }
+          h3 { font-size: 20px !important; }
+          
+          .grid { gap: 16px !important; }
+          
+          /* Improve spacing on mobile */
+          section { padding-bottom: 32px !important; }
+          
+          /* Better button sizing on mobile */
+          a[class*="rounded-full"], button[class*="rounded-full"] {
+            padding: 10px 16px !important;
+            font-size: 14px !important;
+          }
+          
+          /* Stack stats better on mobile */
+          .grid-cols-3 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
+          
+          /* Improve QuickActionCTA positioning on mobile */
+          .fixed.bottom-6.right-6 {
+            bottom: 16px !important;
+            right: 16px !important;
+          }
+        }
+        
+        @media (max-width: 640px) {
+          /* Even smaller screens */
+          h1 { font-size: 24px !important; }
+          h2 { font-size: 20px !important; }
+          
+          /* Better video grid on small screens */
+          .grid-cols-1.sm\\:grid-cols-2 {
+            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+          }
+          
+          /* Improve modal padding on small screens */
+          .fixed.inset-0.z-50 {
+            padding: 8px !important;
+          }
         }
       `}</style>
     </>
