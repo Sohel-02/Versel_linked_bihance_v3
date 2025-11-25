@@ -1,512 +1,137 @@
-// pages/index.jsx
-import React, { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
+import React, { useEffect, useState, useRef } from "react";
+import Head from "next/head";
+import QuickActionCTA from '../components/QuickActionCTA';
 
 /**
- * Real Estate Video Editing — Portfolio (Next.js + Tailwind-friendly)
- * Updated: Responsive modal with correct aspect-box sizing + professional QuickActionCTA
- * - Fixed iframe aspect rendering (padding-bottom fallback)
- * - Reworked QuickActionCTA to a set of rounded floating action buttons with icons, tooltips, and keyboard support
+ * pages/index.jsx — Finalized Realtor Video Editing Portfolio
+ * - Replaced generic templates with individual, hand-written montage descriptions
+ * - Montage Showcase horizontally scrollable with keyboard and trackpad support
+ * - Pointer-follow tilt effect (JS-enhanced) with reduced-motion respect
+ * - About & Process further refined for a modern, high-conversion layout
+ * - Improved accessibility: ARIA labels, focus outlines, keyboard scrolling
  */
 
-// ---------- ProgressiveImage (kept for potential poster/placeholder usage) ----------
-function ProgressiveImage({
-  src,
-  placeholder,
-  alt = '',
-  className = '',
-  eager = false,
-  fit = 'cover'
-}) {
-  const imgRef = useRef(null);
-  const [inView, setInView] = useState(eager);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    if (eager) return;
-    if (!imgRef.current) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setInView(true);
-            io.disconnect();
-          }
-        });
-      },
-      { rootMargin: '300px', threshold: 0.01 }
-    );
-    io.observe(imgRef.current);
-    return () => io.disconnect();
-  }, [eager]);
-
-  const style = {
-    width: '100%',
-    height: fit === 'auto' ? 'auto' : '100%',
-    objectFit: fit,
-    transition: 'opacity .42s, transform .42s',
-    opacity: loaded ? 1 : 0,
-    transform: loaded ? 'translateY(0)' : 'translateY(6px)'
-  };
-
-  return (
-    <div ref={imgRef} className={`relative overflow-hidden ${className}`} aria-busy={!loaded}>
-      {placeholder && (
-        <img
-          src={placeholder}
-          alt=""
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'blur(8px) saturate(.9)',
-            transform: 'scale(1.02)',
-            transition: 'opacity .42s ease'
-          }}
-        />
-      )}
-      {inView && (
-        <img
-          src={src}
-          alt={alt}
-          onLoad={() => setLoaded(true)}
-          onError={() => setLoaded(true)}
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-          style={style}
-        />
-      )}
-    </div>
-  );
-}
-
-// ---------- Services Data ----------
-const SERVICES = [
-  {
-    id: 'home-tours',
-    title: 'Dynamic Home Tours & Montages',
-    hero: 'Dynamic Home Tours & Montages — Make buyers fall in love at first click',
-    sub: 'Stylish, fast-paced montages that highlight selling points and inspire viewing inquiries.',
-    description: 'Curated home tour videos (60s–2m) that show flow, light, and lifestyle. Includes optimized social cuts and MLS-safe exports.',
-    features: [
-      'Fast 24–72 hour turnaround available',
-      'Color grading tailored to natural light',
-      'Shot organization & continuity edits',
-      'MLS-ready H.264 MP4 + social crops'
-    ],
-    showcase: [
-      'https://youtu.be/kfAQH-eUXn8',
-      'https://youtu.be/SoqR188ZP9E',
-      'https://youtu.be/EbnjctFkO14'
-    ]
-  },
-  {
-    id: 'shorts',
-    title: 'Viral Shorts (Reels / TikToks)',
-    hero: 'Viral Shorts — Capture attention on Instagram & TikTok',
-    sub: 'Hook-first edits optimized for 15–60s social formats to convert views into leads.',
-    description: 'Short, high-energy vertical edits, with animated captions and beat edits. Perfect to generate showing requests and DMs.',
-    features: ['Hook-first editing (0–3s optimized)', 'Animated captions & CTAs', 'Beat-synced cuts & trending audio', 'Vertical & square crops with captions'],
-    showcase: [
-      'https://youtube.com/shorts/921OO715OyI?feature=share',
-      'https://youtube.com/shorts/muneHSilb84?feature=share'
-    ]
-  },
-  {
-    id: 'cinematic',
-    title: 'Cinematic Walkthroughs',
-    hero: 'Cinematic Walkthroughs — Show the story of the house',
-    sub: 'Slow, cinematic pacing for high-end listings with music and scene-building edits.',
-    description: 'Slow-paced walkthroughs for premium listings. Emphasis on motion smoothing, cinematic color grade, and optional VO.',
-    features: ['4K-ready edits', 'Stabilization & motion smoothing', 'Professional color grade & LUTs', 'Optional voiceover / script edits'],
-    showcase: ['https://youtu.be/6EzERzpkorM', 'https://youtu.be/KW4B5tV1woQ']
-  },
-  {
-    id: 'drone',
-    title: 'Aerial Neighborhood & Lifestyle Highlights',
-    hero: 'Aerial Neighborhood & Lifestyle Highlights — Sell the location, not just the home',
-    sub: 'Drone edits that showcase location, amenities, and lifestyle — parks, skyline, and approach shots.',
-    description: 'Smooth aerial edits with location callouts and animated maps. Deliverables for ads and listings.',
-    features: ['Drone stabilization & color grade', 'Location callouts & animated maps', 'Smooth aerial-to-ground transitions', '30s & 60s ad-ready versions'],
-    showcase: ['https://youtu.be/NlPMM8tyf58', 'https://youtu.be/aPk_UY7JD38']
-  }
-];
-
-const DEFAULT_WHATSAPP_NUMBER = '919905689072';
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || DEFAULT_WHATSAPP_NUMBER;
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919905689072";
 const WHATSAPP_MESSAGE =
   process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ||
-  "Hi Aamir, I'm interested in your real estate video editing services. Could you share pricing and turnaround?";
-const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  "Hi Aamir — interested in your editing services. Please share pricing & turnaround.";
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+  WHATSAPP_MESSAGE
+)}`;
+const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@aamir.video";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://your-site.example";
 
-const HERO_VIDEO_URL = 'https://youtu.be/RkUuN4ErGmg';
+const RAW = {
+  montages: [
+    "https://youtu.be/DPGOQye1iKk",
+    "https://youtu.be/qGdq5SiQfwU",
+    "https://youtu.be/DevuggJVgOo",
+    "https://www.youtube.com/watch?v=jzF_Cc5KeWs",
+    "https://youtu.be/lEbwVhWUqY0",
+    "https://youtu.be/KxFNz5Ifc4w",
+    "https://youtu.be/kk7_evjf-RE",
+    "https://youtu.be/d5ZAYpkqvxA",
+    "https://youtu.be/4wjWqpKbKSU",
+    "https://youtu.be/xiBEAVN7LWs",
+    "https://youtu.be/8Z-1A8YmTsE",
+  ],
+  cinematic: [
+    "https://youtu.be/x75tbg0RBus",
+    "https://youtu.be/x9DPLwAnWjM",
+    "https://youtu.be/jy-ncpwHscw",
+    "https://youtu.be/OnNx_Dpjnjg",
+  ],
+  shorts: [
+    "https://youtube.com/shorts/U9HROCPcX4Q?feature=share",
+    "https://youtube.com/shorts/hnKJcufqXTE?feature=share",
+    "https://youtube.com/shorts/921OO715OyI?feature=share",
+    "https://youtube.com/shorts/OMNSYjiF8vM?feature=share",
+    "https://youtube.com/shorts/nryR-e3uRsg?feature=share",
+    "https://youtube.com/shorts/AqaYtm3xuO8?feature=share",
+    "https://youtube.com/shorts/PxZuimdPuVo?feature=share",
+  ],
+  aerial: [
+    "https://youtu.be/NlPMM8tyf58",
+    "https://youtu.be/aPk_UY7JD38",
+    "https://youtube.com/shorts/ErZZV0GDgHw?feature=share",
+    "https://youtu.be/XgUdC2dVgb8",
+  ],
+};
 
-// ---------- Thumbnail loader: tries multiple candidates to avoid blurry missing thumbs ----------
-function useYoutubeThumbnail(videoId, preferred = 'maxresdefault') {
-  const [url, setUrl] = useState('');
-  useEffect(() => {
-    if (!videoId) {
-      setUrl('');
-      return;
-    }
-    
-    // Comprehensive fallback chain: try highest quality first, then progressively lower
-    // Note: Some 404 errors in console are expected when thumbnails don't exist - the fallback handles this
-    const candidates = [
-      `https://img.youtube.com/vi/${videoId}/${preferred}.jpg`, // Try preferred first
-      `https://img.youtube.com/vi/${videoId}/sddefault.jpg`,   // Standard definition (640x480) - good for shorts
-      `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`,   // High quality (480x360) - most reliable
-      `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`,  // Medium quality (320x180)
-      `https://img.youtube.com/vi/${videoId}/default.jpg`      // Default fallback (120x90)
-    ];
+const extractId = (raw) => {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw.trim());
+    const host = u.hostname.replace("www.", "").toLowerCase();
+    if (host === "youtu.be") return u.pathname.slice(1).split(/[/?#]/)[0];
+    if (u.pathname.startsWith("/shorts/"))
+      return u.pathname.split("/").pop().split(/[/?#]/)[0];
+    if (u.searchParams.get("v")) return u.searchParams.get("v");
+    const last = u.pathname.split("/").filter(Boolean).pop();
+    return last && last.length >= 6 ? last : null;
+  } catch (e) {
+    const m = raw.match(/(?:v=|\/)([0-9A-Za-z_-]{6,})/);
+    return m ? m[1] : null;
+  }
+};
+const isShort = (u) => /shorts/i.test(u);
+const thumb = (id, q = "hqdefault") => `https://img.youtube.com/vi/${id}/${q}.jpg`;
 
-    let cancelled = false;
-    let currentIndex = 0;
-    
-    const tryLoad = (index = 0) => {
-      if (cancelled) return;
-      
-      // If we've tried all candidates, use hqdefault as final fallback (most reliable)
-      if (index >= candidates.length) {
-        if (!cancelled) {
-          setUrl(`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`);
-        }
-        return;
-      }
-      
-      const img = new Image();
-      const timeout = setTimeout(() => {
-        // If image doesn't load within 2 seconds, try next candidate
-        if (!cancelled && currentIndex === index) {
-          tryLoad(index + 1);
-        }
-      }, 2000);
-      
-      img.onload = () => {
-        clearTimeout(timeout);
-        if (!cancelled && currentIndex === index) {
-          setUrl(candidates[index]);
-        }
-      };
-      
-      img.onerror = () => {
-        clearTimeout(timeout);
-        if (!cancelled && currentIndex === index) {
-          // Try next candidate on error
-          tryLoad(index + 1);
-        }
-      };
-      
-      currentIndex = index;
-      // Set src last to trigger load
-      img.src = candidates[index];
-    };
-    
-    tryLoad(0);
-    
-    return () => {
-      cancelled = true;
-    };
-  }, [videoId, preferred]);
+const SERVICES = Object.entries(RAW).map(([k, arr]) => {
+  const seen = new Set();
+  const videos = arr
+    .map((u) => ({ url: u, id: extractId(u), short: isShort(u) }))
+    .filter((v) => v.id)
+    .filter((v) => (seen.has(v.id) ? false : seen.add(v.id) || true));
 
-  return url;
-}
-
-// ---------- Lazy YouTube Embed (robust video id extraction + short detection) ----------
-function LazyYouTubeVideo({ url, title = 'Video', className = '', eager = false, thumbnailQuality = 'hqdefault', onThumbnailClick }) {
-  const [inView, setInView] = useState(eager);
-  const containerRef = useRef(null);
-
-  // Extract video ID from many YouTube URL formats
-  const getVideoId = (raw) => {
-    if (!raw || typeof raw !== 'string') return null;
-    try {
-      const u = new URL(raw.trim());
-      const host = u.hostname.replace('www.', '').toLowerCase();
-
-      if (host === 'youtu.be') {
-        return u.pathname.slice(1).split(/[/?#]/)[0] || null;
-      }
-      if (u.pathname.startsWith('/shorts/')) {
-        return u.pathname.split('/').pop().split(/[/?#]/)[0] || null;
-      }
-      if (u.pathname.startsWith('/embed/')) {
-        return u.pathname.split('/').pop().split(/[/?#]/)[0] || null;
-      }
-      if (u.searchParams.get('v')) {
-        return u.searchParams.get('v');
-      }
-      const lastSeg = u.pathname.split('/').filter(Boolean).pop();
-      if (lastSeg && lastSeg.length >= 6 && lastSeg.length <= 20) {
-        return lastSeg;
-      }
-      return null;
-    } catch (e) {
-      const m = raw.match(/(?:v=|\/)([0-9A-Za-z_-]{6,})/);
-      return m ? m[1] : null;
-    }
+  const meta = {
+    montages: { title: "Montages", tagline: "Emotion-driven property reels." },
+    cinematic: { title: "Cinematic Walkthroughs", tagline: "Slow, immersive tours." },
+    shorts: { title: "Reels & Shorts", tagline: "Scroll-stopping clips." },
+    aerial: { title: "Aerial Highlights", tagline: "Neighborhood + context." },
   };
 
-  const videoId = getVideoId(url);
-  if (!videoId) return null;
+  return { id: k, videos, ...meta[k] };
+});
 
-  // A safer, simpler short detection: check for 'shorts' in the URL path or query
-  const isShort = /shorts/i.test(url);
+const FLATTEN = SERVICES.flatMap((s) =>
+  s.videos.map((v) => ({ ...v, category: s.id, categoryTitle: s.title }))
+);
 
-  // use hook to get the best available thumbnail
-  // For shorts, use sddefault or hqdefault as they're more reliably available
-  // For regular videos, use the passed thumbnailQuality (usually maxresdefault for hero, hqdefault for others)
-  const preferredQuality = isShort ? 'sddefault' : thumbnailQuality;
-  const thumbnailUrl = useYoutubeThumbnail(videoId, preferredQuality);
-
-  const embedBase = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`;
-
-  useEffect(() => {
-    if (eager) {
-      setInView(true);
-      return;
-    }
-    if (!containerRef.current) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setInView(true);
-            io.disconnect();
-          }
-        });
-      },
-      { rootMargin: '300px', threshold: 0.12 }
-    );
-    io.observe(containerRef.current);
-    return () => io.disconnect();
-  }, [eager]);
-
-  const handleClick = () => {
-    if (onThumbnailClick) {
-      onThumbnailClick({ videoId, title, embedUrl: embedBase, url });
-    }
-  };
-
-  // aspect style: vertical (shorts) uses ~9/16 (height > width)
-  const paddingBottom = isShort ? '177.78%' : '56.25%'; // 9/16 => 177.78%, 16/9 => 56.25%
-
+function PlayIcon({ size = 18 }) {
   return (
-    <div
-      ref={containerRef}
-      className={`${className} relative w-full`}
-      style={{ minHeight: 100 }}
-      aria-label={title}
-    >
-      <button
-        onClick={handleClick}
-        className="w-full group block rounded-2xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity"
-        aria-label={`Play ${title}`}
-        style={{ textAlign: 'left' }}
-      >
-        <div
-          className="w-full bg-cover bg-center relative"
-          style={{
-            paddingBottom,
-            backgroundImage: inView && thumbnailUrl ? `url(${thumbnailUrl})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundColor: '#111'
-          }}
-        >
-          <div
-            className="absolute inset-0 flex items-center justify-center"
-            style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.28) 100%)' }}
-          >
-            <div
-              className="flex items-center gap-2 rounded-lg px-3 py-2 group-hover:scale-105 transition-transform"
-              style={{
-                background: 'rgba(0,0,0,0.52)',
-                color: 'white',
-                transform: 'translateY(0)'
-              }}
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white" className="flex-shrink-0">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <div className="text-left">
-                <div className="text-sm font-semibold leading-tight">{title}</div>
-                <div className="text-xs opacity-80 mt-0.5">Click to play</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </button>
-    </div>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="inline-block" aria-hidden>
+      <path d="M8 5v14l11-7z" fill="currentColor" />
+    </svg>
   );
 }
 
-// ---------- Video Modal Component (responsive aspect-box sizing to avoid mobile clipping) ----------
-function VideoModal({ videoId, title, embedUrl, isOpen, onClose }) {
-  const [muted, setMuted] = useState(true);
-  const [iframeKey, setIframeKey] = useState(0); // to reload iframe when toggling mute
-
+function Modal({ open, embedUrl, title, onClose }) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    };
-  }, [isOpen]);
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => (document.body.style.overflow = "");
+  }, [open]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
-  }, [isOpen, onClose]);
-
-  // reset mute when new video opens
-  useEffect(() => {
-    if (isOpen) {
-      setMuted(true);
-      setIframeKey((k) => k + 1);
-    }
-  }, [videoId, isOpen]);
-
-  if (!isOpen || !videoId) return null;
-
-  const isShort = embedUrl ? /shorts/i.test(embedUrl) || /shorts/i.test(title) : /shorts/i.test(title);
-
-  const ensureEmbed = (raw, id) => {
-    if (!raw || typeof raw !== 'string') {
-      return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
-    }
-    try {
-      const u = new URL(raw);
-      if (/\/embed\//i.test(u.pathname)) {
-        const base = `https://${u.hostname}${u.pathname}`;
-        return `${base}?rel=0&modestbranding=1&playsinline=1`;
-      }
-      return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
-    } catch (e) {
-      return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
-    }
-  };
-
-  const finalEmbedBase = ensureEmbed(embedUrl, videoId);
-  const iframeSrc = `${finalEmbedBase}${finalEmbedBase.includes('?') ? '&' : '?'}autoplay=1&playsinline=1${muted ? '&mute=1' : ''}`;
-
-  const handleUnmute = () => {
-    setMuted(false);
-    setIframeKey((k) => k + 1);
-  };
-
+  if (!open) return null;
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2"
-      onClick={onClose}
-      aria-modal="true"
-      role="dialog"
-      style={{ WebkitTapHighlightColor: 'transparent' }}
-    >
-      {/* BACKDROP (explicit stacking) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background: 'rgba(0,0,0,0.72)',
-          backdropFilter: 'blur(6px)',
-          zIndex: 1
-        }}
-      />
-
-      {/* MODAL CONTENT BOX (stack above backdrop) */}
-      <div
-        className="relative w-full mx-4"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          zIndex: 2,
-          width: '100%',
-          maxWidth: 1100,
-          borderRadius: 18,
-          padding: '8px',
-          boxSizing: 'border-box'
-        }}
-      >
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-30 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white transition-colors"
-          aria-label="Close video"
-          style={{ zIndex: 30 }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 6L6 18M6 6l12 12" />
-          </svg>
-        </button>
-
-        {muted && (
-          <button
-            onClick={handleUnmute}
-            className="absolute left-4 top-3 z-30 px-3 py-2 rounded-full bg-white/90 text-black font-semibold transition-colors hover:bg-white"
-            aria-label="Unmute"
-            style={{ zIndex: 30 }}
-          >
-            Unmute
-          </button>
-        )}
-
-        {/* Player wrapper: fixed aspect ratio container */}
-        <div
-          style={{
-            width: '100%',
-            borderRadius: 12,
-            overflow: 'hidden',
-            boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
-            background: '#000',
-            position: 'relative'
-          }}
-        >
-          {/* Aspect ratio container - ensures proper video display without black areas */}
-          <div
-            className="video-container"
-            style={{
-              position: 'relative',
-              width: '100%',
-              paddingBottom: isShort ? '177.78%' : '56.25%', // 9/16 for vertical shorts, 16/9 for standard videos
-              height: 0,
-              background: '#000',
-              overflow: 'hidden',
-              display: 'block',
-              aspectRatio: isShort ? '9/16' : '16/9' // Modern CSS fallback
-            }}
-          >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-5xl rounded-2xl overflow-hidden bg-neutral-900/95 shadow-2xl">
+        <div className="p-3 flex items-center justify-between border-b border-neutral-800">
+          <strong className="text-white">{title}</strong>
+          <div className="flex gap-2">
+            <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="px-3 py-1 rounded bg-neutral-800 text-white text-sm">Contact</a>
+            <button onClick={onClose} className="px-3 py-1 rounded bg-neutral-800 text-white text-sm">Close</button>
+          </div>
+        </div>
+        <div style={{ background: "#000" }}>
+          <div style={{ position: "relative", width: "100%", paddingBottom: "56.25%" }}>
             <iframe
-              key={`iframe-${iframeKey}`}
-              src={iframeSrc}
+              src={`${embedUrl}?autoplay=1&modestbranding=1&rel=0`}
               title={title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
               allowFullScreen
-              loading="eager"
-              style={{
-                position: 'absolute',
-                top: '0',
-                left: '0',
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                display: 'block',
-                margin: 0,
-                padding: 0,
-                outline: 'none'
-              }}
+              style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
             />
           </div>
         </div>
@@ -515,538 +140,661 @@ function VideoModal({ videoId, title, embedUrl, isOpen, onClose }) {
   );
 }
 
-// ---------- Professional QuickActionCTA (rounded action buttons) ----------
-function QuickActionCTA({ whatsappLink }) {
-  const [open, setOpen] = useState(false);
+/* handcrafted short descriptions (one per montage) */
+const MONTAGE_DESCRIPTIONS = [
+  "Warm opening — curb appeal and entrance that sells the first impression.",
+  "Bright, airy living spaces — showcases daylight and flow between rooms.",
+  "Kitchen hero — closeups on finishes that attract buyers and agents.",
+  "Bedroom retreat — mood, calm pacing, and lifestyle framing.",
+  "Outdoor reveal — garden, patio, and entertaining potential.",
+  "Aerial tease + reveal — shows context and nearby amenities.",
+  "Night grade — mood lighting and inviting evening shots.",
+  "Retail-ready vertical — perfect for reels and fast social engagement.",
+  "Open-plan flow — guiding viewers naturally from room to room.",
+  "Luxury finish focus — textures, materials and details that justify price.",
+  "Quick-clip lead — thumb-stopping rhythm with a strong hook.",
+];
 
-  const toggleOpen = () => setOpen((v) => !v);
+/* MontageList: horizontally scrollable, keyboard-aware, and JS pointer tilt */
+function MontageList({ items = [], onPlay }) {
+  const listRef = useRef(null);
+  const prefersReduced = typeof window !== 'undefined' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
 
-  const scrollTo = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setOpen(false);
-  };
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
 
-  const handleKey = (e, cb) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      cb();
-    }
-  };
+    // keyboard support when the list has focus
+    const onKey = (e) => {
+      if (e.key === 'ArrowRight') {
+        el.scrollBy({ left: 360, behavior: 'smooth' });
+      } else if (e.key === 'ArrowLeft') {
+        el.scrollBy({ left: -360, behavior: 'smooth' });
+      }
+    };
+
+    el.addEventListener('keydown', onKey);
+    return () => el.removeEventListener('keydown', onKey);
+  }, []);
+
+  // optional pointer-follow tilt per card (delegated)
+  useEffect(() => {
+    if (prefersReduced) return; // respect reduced motion
+    const el = listRef.current;
+    if (!el) return;
+
+    const onMove = (e) => {
+      // find nearest card under pointer
+      const cards = Array.from(el.querySelectorAll('.tilt-card'));
+      cards.forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / rect.width;
+        const dy = (e.clientY - cy) / rect.height;
+        const rx = dy * -6; // rotateX
+        const ry = dx * 8; // rotateY
+        const inner = card.querySelector('.card-3d');
+        if (inner) inner.style.transform = `translateY(-8px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      });
+    };
+
+    const onLeave = () => {
+      el.querySelectorAll('.card-3d').forEach((inner) => (inner.style.transform = ''));
+    };
+
+    el.addEventListener('mousemove', onMove);
+    el.addEventListener('mouseleave', onLeave);
+    return () => {
+      el.removeEventListener('mousemove', onMove);
+      el.removeEventListener('mouseleave', onLeave);
+    };
+  }, []);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex items-end gap-3">
-      {/* Main FAB: expands to show smaller action buttons */}
-      <div className="flex flex-col items-center gap-3">
-        {/* Action buttons: shown when open */}
-        <div className={`flex flex-col items-center gap-3 transition-all duration-200 ${open ? 'opacity-100 translate-y-0' : 'opacity-0 pointer-events-none translate-y-3'}`}>
-          <button
-            onClick={() => scrollTo('showcase')}
-            onKeyDown={(e) => handleKey(e, () => scrollTo('showcase'))}
-            aria-label="Open showcase"
-            className="w-12 h-12 rounded-full shadow-lg bg-white flex items-center justify-center ring-1 ring-gray-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400"
-            title="Showcase"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="14" rx="2" />
-              <path d="M7 21h10" />
-            </svg>
-          </button>
-
-          <button
-            onClick={() => scrollTo('services')}
-            onKeyDown={(e) => handleKey(e, () => scrollTo('services'))}
-            aria-label="See services"
-            className="w-12 h-12 rounded-full shadow-lg bg-white flex items-center justify-center ring-1 ring-gray-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400"
-            title="Services"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Contact on WhatsApp"
-            className="w-12 h-12 rounded-full shadow-lg bg-green-500 flex items-center justify-center text-white hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-300"
-            title="WhatsApp"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12.1a9 9 0 1 0-2.6 6.2L21 21l-1.7-5.4A8.9 8.9 0 0 0 21 12.1z" />
-              <path d="M17.5 14.5c-.2-.1-1.2-.6-1.4-.7-.4-.1-.6-.1-.8.2-.1.2-.5.7-.6.8-.1.1-.3.1-.5.0-.2-.1-.9-.3-1.7-1.1-.6-.5-1-1.1-1.1-1.3-.1-.2 0-.4.1-.5.1-.1.2-.3.3-.5.1-.1.1-.2 0-.4-.1-.2-.8-1.8-1.1-2.5-.3-.7-.6-.6-.8-.6-.2 0-.5 0-.8 0-.3 0-.8.1-1.2.6-.4.5-1.3 1.3-1.3 3.1 0 1.8 1.3 3.5 1.4 3.7.1.2 2.2 3.3 5.6 4.5 3.4 1.2 3.4.8 4 1.1.6.3 2.6 1 3 1.1.4.1 1.6.1 1.8-1.2.2-1.3.2-2.4.1-2.6-.1-.2-.3-.2-.6-.3z" />
-            </svg>
-          </a>
-        </div>
-
-        {/* Main FAB */}
-        <button
-          onClick={toggleOpen}
-          onKeyDown={(e) => handleKey(e, toggleOpen)}
-          aria-expanded={open}
-          aria-label={open ? 'Close quick actions' : 'Open quick actions'}
-          className="w-14 h-14 rounded-full bg-red-500 shadow-2xl flex items-center justify-center text-white transform transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400"
-          title={open ? 'Close' : 'Quick actions'}
-        >
-          {open ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          )}
-        </button>
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-2xl font-bold">Montage Showcase</h3>
+        <div className="text-sm text-gray-600">Swipe or use ← → • Tap to play</div>
       </div>
 
-      <style jsx>{`
-        /* small fade/slide for the action stack */
-        .quick-action-enter { opacity: 0; transform: translateY(6px) scale(.98); }
-      `}</style>
+      <div className="-mx-4 px-4">
+        <div
+          ref={listRef}
+          className="flex gap-6 py-2 overflow-x-auto scrollbar-hide focus:outline-none"
+          tabIndex={0}
+          aria-label="Montage list — use arrow keys to scroll"
+        >
+          {items.map((it, i) => (
+            <article
+              key={it.id + i}
+              className="tilt-card group relative rounded-2xl overflow-hidden bg-white card-3d min-w-[320px] sm:min-w-[380px] lg:min-w-[420px]"
+            >
+              <button
+                onClick={() => onPlay(it.id, `Montage — ${it.id}`)}
+                className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                aria-label={`Play montage ${i + 1}`}
+              >
+                <div className="relative overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                  <img
+                    src={thumb(it.id, 'maxresdefault')}
+                    alt={`${it.categoryTitle} preview ${i + 1}`}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="p-3 rounded-full bg-white/90 shadow"><PlayIcon size={30} /></div>
+                  </div>
+                  <div className="absolute top-3 left-3">
+                    <span className="category-pill">{it.categoryTitle}</span>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <h4 className="font-semibold text-lg text-gray-900">{it.categoryTitle} — {i + 1}</h4>
+                  <p className="text-sm text-gray-600 mt-2">{MONTAGE_DESCRIPTIONS[i % MONTAGE_DESCRIPTIONS.length]}</p>
+
+                  <div className="mt-3 flex items-center gap-2 text-xs">
+                    <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">{it.categoryTitle}</span>
+                    <span className="text-gray-500">• {it.short ? 'Short' : 'Full'}</span>
+                  </div>
+                </div>
+              </button>
+            </article>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ---------- Main Page ----------
-export default function RealEstatePortfolio() {
-  const router = useRouter();
-  const { rid: ridFromRouter } = router.query;
+export default function PortfolioFinal() {
+  const [modal, setModal] = useState({ open: false, embedUrl: "", title: "" });
+  const [active, setActive] = useState("all");
+  const [q, setQ] = useState("");
 
-  const [theme, setTheme] = useState('light');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [modalVideo, setModalVideo] = useState(null);
-
-  const coreValue = 'I create property videos that shorten time on market and convert views into showing requests.';
+  const openModal = (embedUrl, title) => setModal({ open: true, embedUrl, title });
+  const closeModal = () => setModal({ open: false, embedUrl: "", title: "" });
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('portfolio-theme');
-      if (saved) {
-        setTheme(saved);
-      } else {
-        // Always default to light mode (day mode) on mobile and desktop
-        setTheme('light');
-      }
-    } catch (e) {
-      // If localStorage fails, default to light mode
-      setTheme('light');
-    }
+    const onKey = (e) => {
+      if (e.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('portfolio-theme', theme);
-    } catch (e) {}
-  }, [theme]);
-
-  const toggleTheme = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
-
-  const handleVideoClick = (videoData) => {
-    setModalVideo(videoData);
+  const getFilteredVideos = (categoryId) => {
+    const svc = SERVICES.find((s) => s.id === categoryId);
+    if (!svc) return [];
+    if (!q.trim()) return svc.videos;
+    const Q = q.toLowerCase();
+    return svc.videos.filter((v) => (v.id + v.url + svc.title).toLowerCase().includes(Q));
   };
 
-  const closeModal = () => {
-    setModalVideo(null);
-  };
-
-  const renderVideoEmbed = (url, idx, isHero = false) => {
-    const title = `Showcase video ${idx + 1}`;
-    return (
-      <LazyYouTubeVideo
-        key={`${idx}-${url}`}
-        url={url}
-        title={title}
-        className={isHero ? 'hero-video' : 'video-embed'}
-        onThumbnailClick={handleVideoClick}
-        eager={isHero}
-        thumbnailQuality={isHero ? 'maxresdefault' : 'hqdefault'}
-      />
-    );
-  };
+  const heroVideoId = FLATTEN[0]?.id;
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased">
       <Head>
-        <title>Real Estate Video Editing — Portfolio | Aamir</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Professional video editing for realtors — home tours, cinematic walkthroughs, viral shorts, and drone highlights that drive leads." />
+        <title>Aamir — Realtor Video Editing (Final)</title>
+        <meta name="description" content="Luxury realtor video editing — montages, cinematic walkthroughs, reels & aerials. Fast delivery." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
-      <VideoModal
-        videoId={modalVideo?.videoId}
-        title={modalVideo?.title || 'Video'}
-        embedUrl={modalVideo?.embedUrl || modalVideo?.url}
-        isOpen={!!modalVideo}
-        onClose={closeModal}
-      />
+      <style jsx>{`
+        :root { --section-vertical: 56px; }
+        @media (min-width: 640px) { :root { --section-vertical: 64px; } }
+        @media (min-width: 1024px) { :root { --section-vertical: 80px; } }
+        section { padding-top: var(--section-vertical); padding-bottom: var(--section-vertical); }
 
-      <QuickActionCTA whatsappLink={WHATSAPP_LINK} />
+        .card-shadow { box-shadow: 0 8px 30px rgba(16,24,40,0.06); }
+        .glass { background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.7)); backdrop-filter: blur(6px); border: 1px solid rgba(15,23,42,0.04); border-radius: 14px; }
 
-      <div className={`${theme === 'dark' ? 'dark' : 'light'} min-h-screen bg-white text-black`}>
-        <nav className="sticky top-0 z-40 bg-white/60 backdrop-blur border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3">
-                <a href="/" className="flex items-center gap-3 no-underline">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-red-500 to-yellow-400 flex items-center justify-center font-extrabold text-lg text-white">A</div>
-                  <div className="hidden sm:block">
-                    <div className="font-extrabold leading-none" style={{ fontFamily: 'Bebas Neue, system-ui' }}>Aamir</div>
-                    <div className="text-xs uppercase tracking-wide text-gray-500">Video Editor</div>
-                  </div>
-                </a>
+        /* interactive tilt container */
+        .tilt-card { perspective: 1000px; }
+        .tilt-card .card-3d { transition: transform .32s cubic-bezier(.2,.9,.3,1), box-shadow .32s; transform-origin: center; }
+        .tilt-card:hover .card-3d, .tilt-card:focus-within .card-3d { transform: translateY(-8px); box-shadow: 0 24px 60px rgba(16,24,40,0.16); }
+        .card-3d { border-radius: 14px; overflow: hidden; }
+
+        .category-pill { display: inline-block; font-weight: 700; font-size: .75rem; padding: .35rem .6rem; border-radius: 999px; background: linear-gradient(90deg,#eef2ff,#fff7ed); color: #3730a3; box-shadow: 0 6px 18px rgba(99,102,241,0.06); }
+
+        /* hide native scrollbar for a cleaner UI (keeps functionality) */
+        .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+        .about-hero { background: linear-gradient(180deg, rgba(99,102,241,0.06), rgba(59,130,246,0.02)); border-radius: 14px; padding: 1.25rem; }
+
+        .process-step { transition: transform .28s ease, box-shadow .28s ease; border-radius: 12px; }
+        .process-step:hover { transform: translateY(-6px); box-shadow: 0 18px 46px rgba(16,24,40,0.08); }
+
+        @media (prefers-reduced-motion: reduce) {
+          .tilt-card .card-3d, .process-step { transition: none; transform: none !important; }
+        }
+
+        /* focus styles for accessibility */
+        :focus { outline: none; }
+        .focus-ring:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 10px; }
+      `}</style>
+
+      <nav className="sticky top-0 z-40 bg-white/70 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <a href="#" className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-indigo-600 to-amber-400 flex items-center justify-center font-extrabold text-lg text-white">A</div>
+            <div className="hidden sm:block">
+              <div className="font-extrabold leading-none text-gray-900">Aamir</div>
+              <div className="text-xs uppercase tracking-wide text-gray-500">Realtor Video Editor</div>
+            </div>
+          </a>
+
+          <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="#showcase-section" className="text-gray-700 hover:text-black">Showcase</a>
+            <a href="#about-section" className="text-gray-700 hover:text-black">About</a>
+            <a href="#contact" className="text-gray-700 hover:text-black">Contact</a>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <a href={WHATSAPP_LINK} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-full text-sm font-semibold">WhatsApp</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* HERO */}
+      <section aria-label="Hero" id="hero" className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-10">
+          <div className="lg:w-1/2">
+            <div className="text-sm uppercase tracking-wider text-indigo-600 font-medium mb-3">Video Editing for Realtors</div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight">
+              Videos That Make Buyers Fall in Love — <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-amber-400">Fast, Polished, Effective</span>
+            </h1>
+            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-gray-700 max-w-xl">I transform raw property footage into cinematic walkthroughs, high-impact montages, and vertical reels optimized for leads — fast turnaround and realtor-first storytelling.</p>
+
+            <div className="mt-5 sm:mt-6 flex items-center gap-3 flex-wrap">
+              <a href="#showcase-section" className="inline-flex items-center gap-3 px-4 sm:px-5 py-2.5 rounded-full font-semibold bg-gradient-to-r from-indigo-600 to-amber-400 text-white shadow hover:scale-[1.02] transition-transform"> <PlayIcon /> View Work</a>
+              {heroVideoId && (
+                <button onClick={() => openModal(`https://www.youtube.com/embed/${heroVideoId}`, "Featured Reel")} className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-white border text-gray-900 hover:shadow-md text-sm font-medium"> <PlayIcon /> Play Reel</button>
+              )}
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-3 max-w-md">
+              <div className="glass p-3 text-center card-shadow">
+                <div className="font-bold text-lg">24–48h</div>
+                <div className="text-sm text-gray-600">Typical delivery</div>
               </div>
-
-              <div className="hidden md:flex items-center gap-6">
-                <a href="#services" className="text-sm font-medium text-gray-700 hover:text-black">Services</a>
-                <a href="#showcase" className="text-sm font-medium text-gray-700 hover:text-black">Showcase</a>
-                <a href="#why" className="text-sm font-medium text-gray-700 hover:text-black">Why Choose Me</a>
+              <div className="glass p-3 text-center card-shadow">
+                <div className="font-bold text-lg">Realtor-First</div>
+                <div className="text-sm text-gray-600">Optimized formats</div>
               </div>
-
-              <div className="flex items-center gap-3">
-                <button onClick={toggleTheme} aria-label="Toggle theme" className="hidden md:inline-flex items-center px-3 py-2 rounded-full bg-gray-100">
-                  <span className="text-sm">{theme === 'dark' ? 'Night' : 'Day'}</span>
-                </button>
-                <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full">
-                  Contact
-                </a>
-
-                <button onClick={() => setMenuOpen((m) => !m)} className="md:hidden p-2">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                    <path d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
+              <div className="glass p-3 text-center card-shadow">
+                <div className="font-bold text-lg">WhatsApp & Email</div>
+                <div className="text-sm text-gray-600">Fast communication</div>
               </div>
             </div>
           </div>
 
-          {menuOpen && (
-            <div className="md:hidden border-t border-gray-100 bg-white">
-              <div className="px-4 py-4 space-y-3">
-                <a href="#services" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Services</a>
-                <a href="#showcase" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Showcase</a>
-                <a href="#why" onClick={() => setMenuOpen(false)} className="block py-2 px-3 rounded-md text-gray-700 hover:text-black">Why Choose Me</a>
-                <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-                  <button onClick={toggleTheme} aria-label="Toggle theme" className="flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-gray-100 text-gray-700">
-                    <span className="text-sm">{theme === 'dark' ? 'Night' : 'Day'}</span>
-                  </button>
-                  <a href={WHATSAPP_LINK} onClick={() => setMenuOpen(false)} className="block w-full text-center py-2 rounded-full bg-red-500 text-white font-semibold">Contact on WhatsApp</a>
+          <div className="lg:w-1/2 w-full">
+            {heroVideoId && (
+              <div className="rounded-2xl overflow-hidden card-shadow bg-black w-full">
+                <div style={{ position: "relative", paddingBottom: "56.25%" }}>
+                  <iframe className="absolute inset-0 w-full h-full" src={`https://www.youtube.com/embed/${heroVideoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${heroVideoId}&modestbranding=1`} title="Hero showreel" frameBorder="0" allow="autoplay; encrypted-media; picture-in-picture" />
+                  <div className="absolute left-3 bottom-3 p-2 rounded-full bg-white/90 text-sm text-gray-900 shadow">Featured showreel</div>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
+
+      {/* SHOWCASE */}
+      <section id="showcase-section" aria-label="Showcase" className="px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Showcase</h2>
+              <div className="text-sm text-gray-600">Browse by category — tap thumbnails to play</div>
+            </div>
+
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={() => setActive("all")} className={`px-3 py-1 rounded-full text-sm ${active === "all" ? "bg-indigo-600 text-white" : "bg-white border text-gray-900"}`}>All ({FLATTEN.length})</button>
+                {SERVICES.map((s) => (
+                  <button key={s.id} onClick={() => setActive(s.id)} className={`px-3 py-1 rounded-full text-sm ${active === s.id ? "bg-gradient-to-r from-indigo-600 to-amber-400 text-white" : "bg-white border text-gray-900"}`}>{s.title} ({s.videos.length})</button>
+                ))}
+              </div>
+              <input placeholder="Search videos" value={q} onChange={(e) => setQ(e.target.value)} className="px-3 py-2 rounded-lg border bg-white text-sm" aria-label="Search videos" />
+            </div>
+          </div>
+
+          {(active === "all" || active === "montages") && (
+            <div className="mb-8">
+              <MontageList items={getFilteredVideos("montages").map(v => ({ ...v, categoryTitle: "Montages" }))} onPlay={(id, title) => openModal(`https://www.youtube.com/embed/${id}`, title)} />
+            </div>
+          )}
+
+          {(active === "all" || active === "cinematic") && (
+            <div className="mb-8">
+              <h3 className="font-semibold mb-3 text-gray-900">Cinematic Walkthroughs</h3>
+              <div className="flex gap-4 overflow-x-auto pb-3">
+                {getFilteredVideos("cinematic").map((v, i) => (
+                  <div key={v.id + i} className="min-w-[300px] sm:min-w-[420px] rounded-2xl overflow-hidden glass card-shadow">
+                    <button onClick={() => openModal(`https://www.youtube.com/embed/${v.id}`, `Cinematic — ${v.id}`)} className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400">
+                      <img src={thumb(v.id, "maxresdefault")} alt="cinematic" loading="lazy" className="w-full h-[240px] object-cover" />
+                      <div className="p-3 text-sm text-gray-700">Cinematic Walkthrough</div>
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-        </nav>
 
-        {/* HERO */}
-        <header className="py-12 md:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-6">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 text-sm mb-4">
-                  <svg width="16" height="16" viewBox="0 0 24 24" className="mr-1">
-                    <rect x="1" y="4" width="22" height="16" rx="4" fill="#FF0000" />
-                    <path d="M9.5 8.5L16 12l-6.5 3.5V8.5z" fill="#fff" />
-                  </svg>
-                  Aamir • Real Estate Video Editor
-                </div>
-
-                <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Video Editing for Realtors — Sell Homes Faster</h1>
-                <p className="text-lg text-gray-700 mb-6"><strong className="text-red-600">{coreValue}</strong></p>
-
-                <div className="flex flex-wrap gap-3">
-                  <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-full bg-red-500 text-white font-semibold">Get a Quote</a>
-                  <a href="#services" className="px-4 py-3 rounded-full border border-gray-200 text-sm">See Services</a>
-                </div>
-
-                <div className="mt-8 grid grid-cols-3 gap-3 max-w-md">
-                  <div className="p-3 bg-gray-50 rounded-lg text-center">
-                    <div className="font-bold">48–72h</div>
-                    <div className="text-xs text-gray-500">Typical delivery</div>
-                  </div>
-                  <div className="p-3 bg-gray-50 rounded-lg text-center">
-                    <div className="font-bold">Realtor-First</div>
-                    <div className="text-xs text-gray-500">Editing templates</div>
-                  </div>
-                  <div className="p-3 bg-gray-50 rounded-lg text-center">
-                    <div className="font-bold">US Based</div>
-                    <div className="text-xs text-gray-500">Timezone-friendly</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-6">
-                <div className="rounded-2xl overflow-hidden shadow-xl">
-                  <LazyYouTubeVideo
-                    url={HERO_VIDEO_URL}
-                    title="Featured Real Estate Video"
-                    className="hero-video"
-                    eager={true}
-                    thumbnailQuality="maxresdefault"
-                    onThumbnailClick={handleVideoClick}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* SERVICES */}
-        <main id="services" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-extrabold">Services</h2>
-              <p className="text-sm text-gray-600 mt-2">Four focused services tailored for property marketing</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {SERVICES.map((s) => (
-              <article key={s.id} className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
-                <h3 className="font-bold text-lg mb-2">{s.title}</h3>
-                <p className="text-sm text-gray-600 mb-4">{s.sub}</p>
-                <ul className="text-sm text-gray-700 space-y-2 mb-4">
-                  {s.features.slice(0, 3).map((f, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <svg width="16" height="16" viewBox="0 0 24 24" className="mt-0.5 text-red-500 flex-shrink-0">
-                        <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                      </svg>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="flex items-center gap-3">
-                  <a href={`#${s.id}`} className="text-sm font-semibold text-red-600">Learn more ➜</a>
-                  <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="ml-auto px-3 py-2 rounded-full bg-red-500 text-white text-sm">Request</a>
-                </div>
-              </article>
-            ))}
-          </div>
-        </main>
-
-        {/* Per-Category Sections */}
-        {SERVICES.map((s) => (
-          <section id={s.id} key={s.id} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-            <div className="pt-8 border-t border-gray-100">
-              <div className="mb-6">
-                <h2 className="text-2xl font-extrabold mb-1">{s.hero}</h2>
-                <p className="text-gray-600">{s.sub}</p>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                  <p className="text-gray-700 mb-4">{s.description}</p>
-                  <ul className="mb-6 space-y-2">
-                    {s.features.map((f, i) => (
-                      <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                        <span className="text-red-600 font-bold">•</span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Showcase Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {s.showcase.length === 0 ? (
-                      <div className="p-4 rounded-lg bg-gray-50 text-center text-sm text-gray-500">No videos yet — add YouTube links in the SERVICES array.</div>
-                    ) : (
-                      s.showcase.map((url, i) => (
-                        <div key={`cat-${s.id}-${i}`} className="rounded-2xl overflow-hidden border border-gray-100">
-                          {renderVideoEmbed(url, i)}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                <aside className="lg:col-span-1">
-                  <div className="sticky top-24 p-6 bg-white border border-gray-100 rounded-2xl shadow-sm">
-                    <h4 className="font-bold text-lg mb-3">Service Snapshot</h4>
-                    <p className="text-sm text-gray-700 mb-4">{s.description}</p>
-                    <ul className="text-sm text-gray-700 space-y-2 mb-4">
-                      {s.features.map((f, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="text-red-600">•</span>
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="block w-full text-center py-2 rounded-full bg-red-500 text-white font-semibold">Request this service</a>
-                  </div>
-                </aside>
-              </div>
-            </div>
-          </section>
-        ))}
-
-        {/* Why Choose Me */}
-        <section id="why" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="mb-8">
-            <h2 className="text-3xl font-extrabold mb-2">Why Choose Me</h2>
-            <p className="text-sm text-gray-600">Professional editing that converts views into leads</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {[
-              { title: 'Quick Delivery', desc: '48–72h standard delivery; rush options available.' },
-              { title: 'Realtor-First Expertise', desc: 'Editing decisions made to highlight salable features and create emotional connection.' },
-              { title: 'Flexible Pricing', desc: 'Single edits, bundle packages, and subscription options for agents and teams.' },
-              { title: 'US-Based Editors', desc: 'Timezone-friendly communication and quality assurance.' },
-              { title: '100% Satisfaction', desc: "Unlimited revisions until you're confident to publish." }
-            ].map((item, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-white border border-gray-100 shadow-sm">
-                <h4 className="font-bold mb-2">{item.title}</h4>
-                <p className="text-sm text-gray-600">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Showcase summary (all categories) */}
-        <section id="showcase" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="mb-8">
-            <h2 className="text-3xl font-extrabold mb-2">Showcase</h2>
-            <p className="text-sm text-gray-600">Selected edits — all videos are embedded below by category</p>
-          </div>
-
-          <div className="space-y-12">
-            {SERVICES.map((s) => (
-              <div key={`summary-${s.id}`} className="pb-8 border-b border-gray-100">
-                <h3 className="font-bold text-xl mb-4">{s.title}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {s.showcase.length === 0 ? (
-                    <div className="col-span-full p-6 rounded-lg bg-gray-50 text-center text-sm text-gray-500">No links added yet</div>
-                  ) : (
-                    s.showcase.map((u, i) => (
-                      <div key={`summary-${s.id}-${i}`} className="rounded-2xl overflow-hidden border border-gray-100">
-                        {renderVideoEmbed(u, i)}
+          {(active === "all" || active === "shorts") && (
+            <div className="mb-8">
+              <h3 className="font-semibold mb-3 text-gray-900">Reels & Shorts</h3>
+              <div className="flex gap-4 overflow-x-auto pb-3">
+                {getFilteredVideos("shorts").map((v, i) => (
+                  <div key={v.id + i} className="min-w-[200px] rounded-2xl overflow-hidden glass card-shadow">
+                    <button onClick={() => openModal(`https://www.youtube.com/embed/${v.id}`, `Short — ${v.id}`)} className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400">
+                      <div style={{ paddingBottom: "177.78%", position: "relative" }}>
+                        <img src={thumb(v.id)} alt="short" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* About */}
-        <section id="about" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          <div className="p-8 rounded-2xl bg-white border border-gray-100 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div>
-                <h3 className="text-xl font-extrabold mb-3">About Aamir</h3>
-                <p className="text-sm text-gray-700">
-                  I provide realtor-focused video editing that helps sell homes faster. I prioritize story-driven edits,
-                  quick turnaround, and social-ready deliverables that convert views into showing requests.
-                </p>
-              </div>
-              <div className="flex flex-col items-start md:items-end gap-3">
-                <div className="text-sm font-semibold text-gray-700">Services</div>
-                <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-100">Home Tours</span>
-                  <span className="px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-100">Cinematic Edits</span>
-                  <span className="px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-100">Viral Shorts</span>
-                  <span className="px-3 py-1 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-100">Drone Highlights</span>
-                </div>
-                <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="mt-2 px-5 py-2 rounded-full bg-red-500 text-white font-semibold">Contact on WhatsApp</a>
+                      <div className="p-3 text-sm text-gray-700">Short</div>
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        </section>
+          )}
 
-        {/* FOOTER */}
-        <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <div className="text-gray-700 mb-4">Let's create videos that make buyers fall in love with properties.</div>
-          <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-red-500 text-white font-semibold">Book a slot on WhatsApp</a>
-          <div className="mt-6 text-sm text-gray-500">© {new Date().getFullYear()} Aamir — Real Estate Video Editing • Fast delivery • Realtor-first templates</div>
-        </footer>
+          {(active === "all" || active === "aerial") && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 text-gray-900">Aerial Highlights</h3>
+              <div className="flex gap-4 overflow-x-auto pb-3">
+                {getFilteredVideos("aerial").map((v, i) => (
+                  <div key={v.id + i} className="min-w-[320px] rounded-2xl overflow-hidden glass card-shadow">
+                    <button onClick={() => openModal(`https://www.youtube.com/embed/${v.id}`, `Aerial — ${v.id}`)} className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400">
+                      <img src={thumb(v.id)} alt="aerial" loading="lazy" className="w-full h-[200px] object-cover" />
+                      <div className="p-3 text-sm text-gray-700">Aerial</div>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
+
+      {/* About + Process (modern redesign) */}
+      <section
+  aria-label="About, Process & Testimonials"
+  id="about-section"
+  className="px-4 sm:px-6 lg:px-8"
+>
+  <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+    {/* ABOUT + PROCESS */}
+    <div className="lg:col-span-2 p-6 about-hero card-shadow">
+      {/* About */}
+      <div className="flex flex-col sm:flex-row gap-6 items-start">
+        <div className="relative">
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500/40 via-amber-400/30 to-sky-400/30 blur-sm" />
+<img
+  src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg"
+  alt="Aamir"
+  className="relative w-28 h-28 rounded-full object-cover shadow-lg"
+/>
+</div>
+
+        <div>
+          <div className="inline-flex items-center gap-2 px-2 py-1 rounded-full bg-white/70 border text-xs font-medium text-gray-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Real Estate Video Editor
+          </div>
+
+          <h3 className="mt-3 text-2xl sm:text-3xl font-bold text-gray-900">
+            About Aamir
+          </h3>
+
+          <p className="mt-2 text-gray-700 text-sm sm:text-base max-w-2xl">
+            I specialize in turning raw listing footage into clean, cinematic videos
+            that make properties stand out on MLS, YouTube and social platforms.
+            My focus is simple: help you get more views, more showings, and faster offers
+            with professional editing and consistent delivery.
+          </p>
+
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 bg-white rounded-lg text-center shadow-sm">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Turnaround
+              </div>
+              <div className="font-bold text-lg">24–48 hours</div>
+              <div className="text-xs text-gray-600">Per standard edit</div>
+            </div>
+            <div className="p-3 bg-white rounded-lg text-center shadow-sm">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Quality
+              </div>
+              <div className="font-bold text-lg">Cinematic grade</div>
+              <div className="text-xs text-gray-600">Color & sound polish</div>
+            </div>
+            <div className="p-3 bg-white rounded-lg text-center shadow-sm">
+              <div className="text-xs uppercase tracking-wide text-gray-500">
+                Platforms
+              </div>
+              <div className="font-bold text-lg">MLS & Social</div>
+              <div className="text-xs text-gray-600">All key aspect ratios</div>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+              Tools I work with
+            </h4>
+            <div className="mt-2 flex gap-2 flex-wrap text-xs">
+              <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                Premiere Pro
+              </span>
+              <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                DaVinci Resolve
+              </span>
+              <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                After Effects
+              </span>
+              <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                Audio cleanup & mix
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <style jsx>{`
-        /* Minimal overrides and helper classes to keep the page pleasant even if Tailwind isn't fully configured */
-        .hero-video { min-height: 260px; }
-        .video-embed { min-height: 160px; }
-        
-        /* Ensure video container and iframe fill completely without black areas */
-        .video-container {
-          position: relative;
-          width: 100%;
-          display: block;
-          overflow: hidden;
-          background: #000;
-        }
-        
-        .video-container iframe {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border: none;
-          display: block;
-          margin: 0;
-          padding: 0;
-          outline: none;
-          box-sizing: border-box;
-        }
-        
-        /* Prevent any overlay or z-index issues in video modal */
-        :global(.video-container) {
-          isolation: isolate;
-        }
-        
-        /* Mobile-specific improvements */
-        @media (max-width: 768px) {
-          nav { padding: 0 12px; }
-          header { padding: 24px 0 !important; }
-          .hero-video { min-height: 200px !important; }
-          .video-embed { min-height: 140px !important; }
-          
-          h1 { font-size: 28px !important; line-height: 1.2 !important; }
-          h2 { font-size: 24px !important; }
-          h3 { font-size: 20px !important; }
-          
-          .grid { gap: 16px !important; }
-          
-          /* Improve spacing on mobile */
-          section { padding-bottom: 32px !important; }
-          
-          /* Better button sizing on mobile */
-          a[class*="rounded-full"], button[class*="rounded-full"] {
-            padding: 10px 16px !important;
-            font-size: 14px !important;
-          }
-          
-          /* Stack stats better on mobile */
-          .grid-cols-3 { grid-template-columns: repeat(1, minmax(0, 1fr)) !important; }
-          
-          /* Improve QuickActionCTA positioning on mobile */
-          .fixed.bottom-6.right-6 {
-            bottom: 16px !important;
-            right: 16px !important;
-          }
-        }
-        
-        @media (max-width: 640px) {
-          /* Even smaller screens */
-          h1 { font-size: 24px !important; }
-          h2 { font-size: 20px !important; }
-          
-          /* Better video grid on small screens */
-          .grid-cols-1.sm\\:grid-cols-2 {
-            grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
-          }
-          
-          /* Improve modal padding on small screens */
-          .fixed.inset-0.z-50 {
-            padding: 8px !important;
-          }
-        }
-      `}</style>
-    </>
+      {/* Process */}
+      <div className="mt-8 pt-6 border-t border-white/60">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h4 className="font-semibold text-gray-900 text-sm sm:text-base">
+            How the edit process works
+          </h4>
+          <span className="hidden sm:inline-block text-xs text-gray-500">
+            Clear, simple, built for busy agents
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
+          <div className="process-step p-4 bg-white rounded-lg text-center relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-indigo-500/70 to-amber-400/70" />
+            <div className="text-indigo-600 font-bold text-xl mb-1">1</div>
+            <div className="font-semibold">Share footage</div>
+            <div className="text-xs text-gray-600 mt-2">
+              Upload your raw clips to Drive / Dropbox and share a link plus a short brief.
+            </div>
+          </div>
+
+          <div className="process-step p-4 bg-white rounded-lg text-center relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-indigo-500/70 to-amber-400/70" />
+            <div className="text-indigo-600 font-bold text-xl mb-1">2</div>
+            <div className="font-semibold">Edit & polish</div>
+            <div className="text-xs text-gray-600 mt-2">
+              I handle pacing, cuts, color, sound and exports for the platforms you choose.
+            </div>
+          </div>
+
+          <div className="process-step p-4 bg-white rounded-lg text-center relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-indigo-500/70 to-amber-400/70" />
+            <div className="text-indigo-600 font-bold text-xl mb-1">3</div>
+            <div className="font-semibold">Review</div>
+            <div className="text-xs text-gray-600 mt-2">
+              You review the first cut and send notes. I quickly apply the requested tweaks.
+            </div>
+          </div>
+
+          <div className="process-step p-4 bg-white rounded-lg text-center relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-indigo-500/70 to-amber-400/70" />
+            <div className="text-indigo-600 font-bold text-xl mb-1">4</div>
+            <div className="font-semibold">Final delivery</div>
+            <div className="text-xs text-gray-600 mt-2">
+              You receive final files ready for MLS, YouTube, Instagram, TikTok and ads.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* TESTIMONIALS / RESULTS */}
+    <aside className="p-6 glass card-shadow sticky top-20">
+      <h4 className="font-semibold mb-2 text-gray-900 text-sm sm:text-base">
+        Agents & teams I’ve worked with
+      </h4>
+      <p className="text-xs text-gray-600 mb-4">
+        A few quick notes from recent real estate clients.
+      </p>
+
+      <div className="space-y-3 text-sm">
+        <div className="p-3 rounded-lg bg-white relative">
+          <span className="absolute -top-3 left-3 text-2xl text-indigo-300">
+            “
+          </span>
+          <p className="pl-4 text-gray-800">
+            Sold in 7 days after the video went live. The listing looked far
+            better than our usual phone video.
+          </p>
+          <div className="mt-2 text-xs text-gray-500">— Realtor, Residential</div>
+        </div>
+
+        <div className="p-3 rounded-lg bg-white relative">
+          <span className="absolute -top-3 left-3 text-2xl text-indigo-300">
+            “
+          </span>
+          <p className="pl-4 text-gray-800">
+            Fast, reliable and very clean edits. Perfect for sending to sellers
+            and using across our social channels.
+          </p>
+          <div className="mt-2 text-xs text-gray-500">— Agent, Team Lead</div>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <h5 className="font-semibold mb-2 text-gray-900 text-sm sm:text-base">
+          Quick snapshot
+        </h5>
+        <div className="flex gap-3 text-sm">
+          <div className="p-3 rounded-lg bg-white text-center flex-1">
+            <div className="font-bold text-lg text-gray-900">+More views</div>
+            <div className="text-xs text-gray-600">
+              Clients report stronger engagement on listing videos.
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-white text-center flex-1">
+            <div className="font-bold text-lg text-gray-900">24–48h</div>
+            <div className="text-xs text-gray-600">Typical delivery window.</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <a
+          href={WHATSAPP_LINK}
+          target="_blank"
+          rel="noreferrer"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold text-sm"
+        >
+          Chat on WhatsApp
+        </a>
+        <a
+          href={`mailto:${CONTACT_EMAIL}`}
+          className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold text-sm"
+        >
+          Email me
+        </a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
+
+<QuickActionCTA whatsappLink={WHATSAPP_LINK} targetId="showcase-section" />
+
+
+
+
+      {/* Contact */}
+<section id="contact" className="px-4 sm:px-6 lg:px-8">
+  <div className="max-w-3xl mx-auto p-6 sm:p-8 glass card-shadow">
+    <h3 className="text-2xl font-bold mb-2 text-gray-900">Start Your Edit</h3>
+    <p className="mb-4 text-gray-700 text-sm">
+      Upload your raw footage to Google Drive, Dropbox, or WeTransfer and share the link below.
+      Add a short note on how you want the final video to look.
+    </p>
+
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+
+        const name = fd.get("name");
+        const email = fd.get("email");
+        const footageLink = fd.get("footageLink");
+        const instructions = fd.get("instructions") || "";
+
+        const subject = `New Video Edit Request from ${name}`;
+        const body = `
+Name: ${name}
+Email: ${email}
+
+Raw Footage Link:
+${footageLink}
+
+Instructions / Editing Notes:
+${instructions}
+
+— Sent from Aamir.video
+        `;
+
+        window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+          subject
+        )}&body=${encodeURIComponent(body)}`;
+      }}
+      className="grid grid-cols-1 gap-3 text-sm"
+    >
+      <input
+        name="name"
+        required
+        placeholder="Your name"
+        className="px-3 py-2 rounded-lg border bg-white"
+      />
+
+      <input
+        name="email"
+        required
+        type="email"
+        placeholder="Your email"
+        className="px-3 py-2 rounded-lg border bg-white"
+      />
+
+      <input
+        name="footageLink"
+        required
+        type="url"
+        placeholder="Raw footage link (Drive / Dropbox / WeTransfer)"
+        className="px-3 py-2 rounded-lg border bg-white"
+      />
+
+      <textarea
+        name="instructions"
+        placeholder="Editing instructions — style, music vibe, text overlays, references…"
+        className="px-3 py-2 rounded-lg border bg-white h-28"
+      />
+
+      <div className="flex justify-end gap-3 mt-2">
+        <button
+          type="submit"
+          className="px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold"
+        >
+          Send Request
+        </button>
+        <a
+          href={WHATSAPP_LINK}
+          className="px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold"
+        >
+          WhatsApp
+        </a>
+      </div>
+    </form>
+  </div>
+</section>
+
+
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-gray-500">
+        <div className="mb-2">Let’s create videos that make buyers fall in love with properties.</div>
+        <div>© {new Date().getFullYear()} Aamir — Real Estate Video Editing</div>
+      </footer>
+
+      <Modal open={modal.open} embedUrl={modal.embedUrl} title={modal.title} onClose={closeModal} />
+    </div>
   );
 }
