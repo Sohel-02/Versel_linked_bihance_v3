@@ -244,7 +244,7 @@ function Icon({ name }) {
 }
 
 /* -----------------------------
-   MontageList + Modal (kept from your file)
+   Play icon + Modal components
    ----------------------------- */
 function PlayIcon({ size = 18 }) {
   return (
@@ -334,73 +334,77 @@ const MONTAGE_DESCRIPTIONS = [
   "Outdoor reveal — garden, patio, and entertaining potential.",
 ];
 
+/* -----------------------------
+   MontageList (no tilt; arrow + keyboard support)
+   ----------------------------- */
 function MontageList({ items = [], onPlay }) {
   const listRef = useRef(null);
-  const prefersReduced =
-    typeof window !== "undefined"
-      ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      : false;
 
   useEffect(() => {
     const el = listRef.current;
     if (!el) return;
     const onKey = (e) => {
       if (e.key === "ArrowRight")
-        el.scrollBy({ left: 360, behavior: "smooth" });
+        el.scrollBy({ left: 420, behavior: "smooth" });
       else if (e.key === "ArrowLeft")
-        el.scrollBy({ left: -360, behavior: "smooth" });
+        el.scrollBy({ left: -420, behavior: "smooth" });
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
   }, []);
 
-  useEffect(() => {
-    if (prefersReduced) return;
+  const scrollBy = (dir = 1) => {
     const el = listRef.current;
     if (!el) return;
-
-    const onMove = (e) => {
-      const cards = Array.from(el.querySelectorAll(".tilt-card"));
-      cards.forEach((card) => {
-        const rect = card.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / rect.width;
-        const dy = (e.clientY - cy) / rect.height;
-        const rx = dy * -6;
-        const ry = dx * 8;
-        const inner = card.querySelector(".card-3d-inner");
-        if (inner)
-          inner.style.transform = `translateY(-10px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-      });
-    };
-
-    const onLeave = () => {
-      el.querySelectorAll(".card-3d-inner").forEach(
-        (inner) => (inner.style.transform = "")
-      );
-    };
-
-    el.addEventListener("mousemove", onMove);
-    el.addEventListener("mouseleave", onLeave);
-    return () => {
-      el.removeEventListener("mousemove", onMove);
-      el.removeEventListener("mouseleave", onLeave);
-    };
-  }, []);
+    const amount = Math.max(360, Math.floor(el.clientWidth * 0.75));
+    el.scrollBy({ left: amount * dir, behavior: "smooth" });
+  };
 
   return (
-    <div>
+    <div className="relative">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-2xl font-bold text-black">Montage Showcase</h3>
-        <div className="card-deep small px-3 py-2">
+        {/* <div className="card-deep small px-3 py-">
           <p className="text-black text-base font-bold">
             Swipe or use ← → • Tap to play
           </p>
-        </div>
+        </div> */}
       </div>
 
-      <div className="-mx-4 px-4">
+      <div className="-mx-4 px-4 relative">
+        {/* Arrow controls */}
+        <button
+          aria-label="Scroll left"
+          onClick={() => scrollBy(-1)}
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M15 18l-6-6 6-6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        <button
+          aria-label="Scroll right"
+          onClick={() => scrollBy(1)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M9 6l6 6-6 6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
         <div
           ref={listRef}
           className="flex gap-6 py-2 overflow-x-auto scrollbar-hide focus:outline-none"
@@ -410,9 +414,9 @@ function MontageList({ items = [], onPlay }) {
           {items.map((it, i) => (
             <article
               key={it.id + i}
-              className="tilt-card relative min-w-[320px] sm:min-w-[380px] lg:min-w-[420px]"
+              className="relative min-w-[320px] sm:min-w-[380px] lg:min-w-[420px]"
             >
-              <div className="card-3d card-3d-inner rounded-2xl overflow-hidden bg-white">
+              <div className="rounded-2xl overflow-hidden showcase-card">
                 <button
                   onClick={() => onPlay(it.id, `Montage — ${it.id}`)}
                   className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
@@ -473,15 +477,15 @@ function BenefitsSection() {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <div className="text-xs font-medium tracking-wider text-gray-400 uppercase">
-            Benefits
+            Why work with me
           </div>
           <h2 className="mt-3 text-4xl md:text-5xl font-extrabold leading-tight">
-            Because Your <span className="text-gray-400">Success Matters</span>
+            Designed for{" "}
+            <span className="text-gray-400">busy real estate teams</span>
           </h2>
           <p className="mt-4 text-gray-600 max-w-3xl">
-            We build design, development and messaging that actually impact your
-            bottom line — not just look pretty. Below are the core advantages
-            you'll get working with us.
+            I focus on edits that help listings move faster — clear storytelling,
+            strong pacing, and clean exports for every platform you care about.
           </p>
         </div>
 
@@ -493,7 +497,9 @@ function BenefitsSection() {
             >
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
-                  <div className="text-orange-500 text-xs font-semibold">/ {b.id}</div>
+                  <div className="text-orange-500 text-xs font-semibold">
+                    / {b.id}
+                  </div>
 
                   <div className="mt-4 icon-wrap">
                     <Icon name={b.icon} />
@@ -501,8 +507,12 @@ function BenefitsSection() {
                 </div>
 
                 <div className="min-w-0">
-                  <h3 className="text-lg font-semibold text-black">{b.title}</h3>
-                  <p className="mt-3 text-sm text-gray-600 leading-relaxed">{b.body}</p>
+                  <h3 className="text-lg font-semibold text-black">
+                    {b.title}
+                  </h3>
+                  <p className="mt-3 text-sm text-gray-600 leading-relaxed">
+                    {b.body}
+                  </p>
                 </div>
               </div>
             </article>
@@ -538,11 +548,7 @@ function BenefitsSection() {
 }
 
 /* -----------------------------
-   NEW: Redesigned HERO to match BENEFITS color / style
-   Updated content per your request:
-   Headline: "Cinematic Video Editing That Sells Homes Faster."
-   Subheadline: "From viral reels to aerial lifestyle highlights — I craft videos that captivate buyers and elevate your listings.
-                Professional, fast-turnaround, and tailored for Realtors who want results."
+   HERO
    ----------------------------- */
 function HeroSection({ heroVideoId, openModal, onScrollTo }) {
   const handleKey = (e) => {
@@ -557,24 +563,24 @@ function HeroSection({ heroVideoId, openModal, onScrollTo }) {
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
         {/* Left column: headline + copy */}
         <div>
-          {/* <div className="text-xs font-medium tracking-wider text-gray-400 uppercase">Hero</div> */}
-
-          {/* Updated headline */}
           <h1 className="mt-4 text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-extrabold leading-tight">
             <div className="text-black">Cinematic Video Editing</div>
             <div className="text-gray-400">That Sells Homes Faster.</div>
           </h1>
 
-          {/* Updated subheadline */}
           <p className="mt-6 text-lg text-gray-600 max-w-2xl">
-            From viral reels to aerial lifestyle highlights — I craft videos that captivate buyers and elevate your listings.
-            Professional, fast-turnaround, and tailored for Realtors who want results.
+            From viral reels to aerial lifestyle highlights — I craft videos
+            that captivate buyers and elevate your listings. Professional,
+            fast-turnaround, and tailored for Realtors who want results.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            {/* View Work now uses shared scroll helper if provided */}
             <button
-              onClick={() => (typeof onScrollTo === "function" ? onScrollTo("showcase-section") : (window.location.hash = "showcase-section"))}
+              onClick={() =>
+                typeof onScrollTo === "function"
+                  ? onScrollTo("showcase-section")
+                  : (window.location.hash = "showcase-section")
+              }
               onKeyDown={handleKey}
               className="inline-flex items-center gap-3 px-5 py-2.5 rounded-xl font-bold bg-black text-white shadow-black shadow-2xl transform hover:translate-y-1 hover:scale-105 transition duration-300"
             >
@@ -594,9 +600,19 @@ function HeroSection({ heroVideoId, openModal, onScrollTo }) {
                 <PlayIcon /> Play Reel
               </button>
             )}
+
+            {/* WhatsApp CTA */}
+            <a
+              href={WHATSAPP_LINK}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold text-sm hover:scale-105 transform transition"
+              aria-label="Book a Free Consultation on WhatsApp"
+            >
+              📞 Book a Free Consultation
+            </a>
           </div>
 
-          {/* Small stats to echo the card feel, using same .card-deep style */}
           <div className="mt-8 grid grid-cols-3 gap-3 max-w-md">
             <div className="glass p-3 text-center card-deep small">
               <div className="font-bold text-lg text-black">24–48h</div>
@@ -631,7 +647,7 @@ function HeroSection({ heroVideoId, openModal, onScrollTo }) {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl overflow-hidden shadow-3d bg-gradient-to-br from-gray-100 to-gray-50 p-8">
+            <div className="rounded-2xl overflow-hidden shadow-3d bg-white w-full p-8">
               <div className="h-60 flex items-center justify-center text-gray-400">
                 No hero video available
               </div>
@@ -641,7 +657,6 @@ function HeroSection({ heroVideoId, openModal, onScrollTo }) {
       </div>
 
       <style jsx>{`
-        /* matching styles used by the Benefits cards */
         .glass {
           background: linear-gradient(
             180deg,
@@ -690,7 +705,7 @@ export default function PortfolioFinalRedesign() {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  // shared scrollToSection: used by hero and QuickActionCTA (if passed)
+  // shared scrollToSection
   const scrollToSection = (id) => {
     const el = document.getElementById(id) || document.querySelector(`#${id}`);
     if (el) {
@@ -722,6 +737,18 @@ export default function PortfolioFinalRedesign() {
 
   const heroVideoId = FLATTEN[0]?.id;
 
+  // refs for cinematic/shorts/aerial carousels
+  const cinematicRef = useRef(null);
+  const shortsRef = useRef(null);
+  const aerialRef = useRef(null);
+
+  const scrollContainer = (ref, dir = 1) => {
+    const el = ref?.current;
+    if (!el) return;
+    const amount = Math.max(360, Math.floor(el.clientWidth * 0.75));
+    el.scrollBy({ left: amount * dir, behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased">
       <Head>
@@ -730,12 +757,25 @@ export default function PortfolioFinalRedesign() {
           name="description"
           content="From viral reels to aerial lifestyle highlights — cinematic editing that helps sell homes faster. Fast, professional, realtor-focused."
         />
+
+        {/* Google Fonts import */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin=""
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Montserrat:wght@500;700;800&display=swap"
+          rel="stylesheet"
+        />
+
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <style jsx global>{`
         :root {
-          --section-vertical: 1px;
+          --section-vertical: 32px;
         }
         @media (min-width: 640px) {
           :root {
@@ -747,6 +787,24 @@ export default function PortfolioFinalRedesign() {
             --section-vertical: 80px;
           }
         }
+
+        /* Fonts: headings use Montserrat, body uses Inter */
+        html,
+        body,
+        #__next {
+          font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+            "Helvetica Neue", Arial;
+        }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          font-family: "Montserrat", ui-sans-serif, system-ui, -apple-system,
+            "Segoe UI", Roboto, "Helvetica Neue", Arial;
+        }
+
         section {
           padding-top: var(--section-vertical);
           padding-bottom: var(--section-vertical);
@@ -767,26 +825,9 @@ export default function PortfolioFinalRedesign() {
           box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6);
         }
 
-        .tilt-card {
-          perspective: 1200px;
-        }
-        .card-3d {
-          border-radius: 14px;
-          overflow: hidden;
-          transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1),
-            box-shadow 0.32s;
-          transform-origin: center;
-        }
-        .card-3d-inner {
-          will-change: transform;
-          transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1),
-            box-shadow 0.28s;
-          box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
-        }
-        .tilt-card:hover .card-3d-inner,
-        .tilt-card:focus-within .card-3d-inner {
-          transform: translateY(-10px);
-          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.55);
+        .showcase-card {
+          background: #ffffff;
+          box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45);
         }
 
         .category-pill {
@@ -797,7 +838,7 @@ export default function PortfolioFinalRedesign() {
           border-radius: 999px;
           background: linear-gradient(90deg, #eef2ff, #fff7ed);
           color: #3730a3;
-          box-shadow: 0 6px 18px rgba(99, 102, 241, 0.06);
+          box-shadow: 0 6px 8px rgba(99, 102, 241, 0.06);
         }
 
         .glass {
@@ -819,7 +860,6 @@ export default function PortfolioFinalRedesign() {
           display: none;
         }
         @media (prefers-reduced-motion: reduce) {
-          .card-3d-inner,
           .process-step {
             transition: none;
             transform: none !important;
@@ -838,10 +878,10 @@ export default function PortfolioFinalRedesign() {
       {/* NAV */}
       <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <a href="#" className="flex items-center gap-3">
+          <a href="/" className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-black to-white flex items-center justify-center font-extrabold text-lg text-white drop-shadow-lg">
-  A
-</div>
+              A
+            </div>
             <div className="hidden sm:block">
               <div className="font-extrabold leading-none text-gray-900">
                 Aamir
@@ -856,8 +896,14 @@ export default function PortfolioFinalRedesign() {
             <a href="#benefits" className="text-gray-700 hover:text-black">
               Benefits
             </a>
-            <a href="#showcase-section" className="text-gray-700 hover:text-black">
+            <a
+              href="#showcase-section"
+              className="text-gray-700 hover:text-black"
+            >
               Showcase
+            </a>
+            <a href="#about-section" className="text-gray-700 hover:text-black">
+              About
             </a>
             <a href="#contact" className="text-gray-700 hover:text-black">
               Contact
@@ -884,8 +930,16 @@ export default function PortfolioFinalRedesign() {
         onScrollTo={scrollToSection}
       />
 
+      {/* Floating quick actions (present across page) */}
+      <QuickActionCTA
+        whatsappLink={WHATSAPP_LINK}
+        targetId="showcase-section"
+      />
+
+      <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
+
       {/* BENEFITS */}
-      <BenefitsSection />
+      
 
       <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
 
@@ -893,45 +947,60 @@ export default function PortfolioFinalRedesign() {
       <section
         id="showcase-section"
         aria-label="Showcase"
-        className="px-4 sm:px-6 lg:px-8"
+        className="px-1 sm:px-6 lg:px-8"
       >
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-black">
-                Showcase
-              </h2>
-              <div className="text-sm text-gray-600">
-                Browse by category — tap thumbnails to play
-              </div>
-            </div>
+            <div className="w-full flex flex-col items-center justify-center text-center pb-6">
+
+  {/* Title */}
+  <h2
+    className="relative inline-block px-10 py-4 rounded-2xl font-extrabold tracking-tight
+               text-3xl sm:text-4xl transition-all duration-500
+               bg-white/80 text-black shadow-xl border border-black/10 backdrop-blur-md"
+  >
+    Showcase
+    <span className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-white/20 to-transparent 
+                     opacity-40 hover:opacity-60 transition-opacity duration-500 pointer-events-none" />
+  </h2>
+
+  {/* Subtitle — centered */}
+  <div className="text-base text-gray-700 mt-3">
+    <span className="inline-block bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+      Browse by category
+    </span>{" "}
+    — tap thumbnails to play
+  </div>
+
+</div>
+
 
             <div className="flex items-center gap-3 flex-wrap">
-             <div className="flex gap-2 flex-wrap">
-  <button
-    onClick={() => setActive("all")}
-    className={`px-3 py-1 rounded-full text-sm font-bold ${
-      active === "all"
-        ? "bg-black text-white shadow-md shadow-black"
-        : "bg-white border text-black hover:bg-gray-200"
-    }`}
-  >
-    All ({FLATTEN.length})
-  </button>
-  {SERVICES.map((s) => (
-    <button
-      key={s.id}
-      onClick={() => setActive(s.id)}
-      className={`px-3 py-1 rounded-full text-sm font-bold ${
-        active === s.id
-          ? "bg-black text-white shadow-md shadow-black"
-          : "bg-white border text-black hover:bg-gray-200"
-      }`}
-    >
-      {s.title} ({s.videos.length})
-    </button>
-  ))}
-</div>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => setActive("all")}
+                  className={`px-3 py-1 rounded-full text-sm font-bold ${
+                    active === "all"
+                      ? "bg-black text-white shadow-md shadow-black"
+                      : "bg-white border text-black hover:bg-gray-200"
+                  }`}
+                >
+                  All ({FLATTEN.length})
+                </button>
+                {SERVICES.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setActive(s.id)}
+                    className={`px-3 py-1 rounded-full text-sm font-bold ${
+                      active === s.id
+                        ? "bg-black text-white shadow-md shadow-black"
+                        : "bg-white border text-black hover:bg-gray-200"
+                    }`}
+                  >
+                    {s.title} ({s.videos.length})
+                  </button>
+                ))}
+              </div>
               <input
                 placeholder="Search videos"
                 value={q}
@@ -961,33 +1030,82 @@ export default function PortfolioFinalRedesign() {
               <h3 className="font-semibold mb-3 text-black">
                 Cinematic Walkthroughs
               </h3>
-              <div className="flex gap-4 overflow-x-auto pb-3">
-                {getFilteredVideos("cinematic").map((v, i) => (
-                  <div
-                    key={v.id + i}
-                    className="min-w-[300px] sm:min-w-[420px] rounded-2xl overflow-hidden glass card-deep"
+
+              <div className="relative -mx-4 px-4">
+                <button
+                  aria-label="Scroll cinematic left"
+                  onClick={() => scrollContainer(cinematicRef, -1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
                   >
-                    <button
-                      onClick={() =>
-                        openModal(
-                          `https://www.youtube.com/embed/${v.id}`,
-                          `Cinematic — ${v.id}`
-                        )
-                      }
-                      className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
+                    <path
+                      d="M15 18l-6-6 6-6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  aria-label="Scroll cinematic right"
+                  onClick={() => scrollContainer(cinematicRef, 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M9 6l6 6-6 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  ref={cinematicRef}
+                  className="flex gap-4 overflow-x-auto pb-3 px-2 scrollbar-hide"
+                >
+                  {getFilteredVideos("cinematic").map((v, i) => (
+                    <div
+                      key={v.id + i}
+                      className="min-w-[300px] sm:min-w-[420px] rounded-2xl overflow-hidden showcase-card"
                     >
-                      <img
-                        src={thumb(v.id, "maxresdefault")}
-                        alt="cinematic"
-                        loading="lazy"
-                        className="w-full h-[240px] object-cover"
-                      />
-                      <div className="p-3 text-sm text-gray-700">
-                        Cinematic Walkthrough
-                      </div>
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() =>
+                          openModal(
+                            `https://www.youtube.com/embed/${v.id}`,
+                            `Cinematic — ${v.id}`
+                          )
+                        }
+                        className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
+                      >
+                        <img
+                          src={thumb(v.id, "maxresdefault")}
+                          alt="cinematic"
+                          loading="lazy"
+                          className="w-full h-[240px] object-cover"
+                        />
+                        <div className="p-3 text-sm text-gray-700">
+                          Cinematic Walkthrough
+                        </div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -995,38 +1113,87 @@ export default function PortfolioFinalRedesign() {
           {(active === "all" || active === "shorts") && (
             <div className="mb-8">
               <h3 className="font-semibold mb-3 text-black">Reels & Shorts</h3>
-              <div className="flex gap-4 overflow-x-auto pb-3">
-                {getFilteredVideos("shorts").map((v, i) => (
-                  <div
-                    key={v.id + i}
-                    className="min-w-[200px] rounded-2xl overflow-hidden glass card-deep"
+
+              <div className="relative -mx-4 px-4">
+                <button
+                  aria-label="Scroll shorts left"
+                  onClick={() => scrollContainer(shortsRef, -1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
                   >
-                    <button
-                      onClick={() =>
-                        openModal(
-                          `https://www.youtube.com/embed/${v.id}`,
-                          `Short — ${v.id}`
-                        )
-                      }
-                      className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
+                    <path
+                      d="M15 18l-6-6 6-6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  aria-label="Scroll shorts right"
+                  onClick={() => scrollContainer(shortsRef, 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M9 6l6 6-6 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  ref={shortsRef}
+                  className="flex gap-4 overflow-x-auto pb-3 px-2 scrollbar-hide"
+                >
+                  {getFilteredVideos("shorts").map((v, i) => (
+                    <div
+                      key={v.id + i}
+                      className="min-w-[200px] rounded-2xl overflow-hidden showcase-card"
                     >
-                      <div
-                        style={{
-                          paddingBottom: "177.78%",
-                          position: "relative",
-                        }}
+                      <button
+                        onClick={() =>
+                          openModal(
+                            `https://www.youtube.com/embed/${v.id}`,
+                            `Short — ${v.id}`
+                          )
+                        }
+                        className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
                       >
-                        <img
-                          src={thumb(v.id)}
-                          alt="short"
-                          className="absolute inset-0 w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                      <div className="p-3 text-sm text-gray-700">Short</div>
-                    </button>
-                  </div>
-                ))}
+                        <div
+                          style={{
+                            paddingBottom: "177.78%",
+                            position: "relative",
+                          }}
+                        >
+                          <img
+                            src={thumb(v.id)}
+                            alt="short"
+                            className="absolute inset-0 w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="p-3 text-sm text-gray-700">Short</div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1036,31 +1203,80 @@ export default function PortfolioFinalRedesign() {
               <h3 className="font-semibold mb-3 text-black">
                 Aerial Highlights
               </h3>
-              <div className="flex gap-4 overflow-x-auto pb-3">
-                {getFilteredVideos("aerial").map((v, i) => (
-                  <div
-                    key={v.id + i}
-                    className="min-w-[320px] rounded-2xl overflow-hidden glass card-deep"
+
+              <div className="relative -mx-4 px-4">
+                <button
+                  aria-label="Scroll aerial left"
+                  onClick={() => scrollContainer(aerialRef, -1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
                   >
-                    <button
-                      onClick={() =>
-                        openModal(
-                          `https://www.youtube.com/embed/${v.id}`,
-                          `Aerial — ${v.id}`
-                        )
-                      }
-                      className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
+                    <path
+                      d="M15 18l-6-6 6-6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+                <button
+                  aria-label="Scroll aerial right"
+                  onClick={() => scrollContainer(aerialRef, 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/90 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M9 6l6 6-6 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  ref={aerialRef}
+                  className="flex gap-4 overflow-x-auto pb-3 px-2 scrollbar-hide"
+                >
+                  {getFilteredVideos("aerial").map((v, i) => (
+                    <div
+                      key={v.id + i}
+                      className="min-w-[320px] rounded-2xl overflow-hidden showcase-card"
                     >
-                      <img
-                        src={thumb(v.id)}
-                        alt="aerial"
-                        loading="lazy"
-                        className="w-full h-[200px] object-cover"
-                      />
-                      <div className="p-3 text-sm text-gray-700">Aerial</div>
-                    </button>
-                  </div>
-                ))}
+                      <button
+                        onClick={() =>
+                          openModal(
+                            `https://www.youtube.com/embed/${v.id}`,
+                            `Aerial — ${v.id}`
+                          )
+                        }
+                        className="w-full block text-left focus-visible:ring-2 focus-visible:ring-indigo-400"
+                      >
+                        <img
+                          src={thumb(v.id)}
+                          alt="aerial"
+                          loading="lazy"
+                          className="w-full h-[200px] object-cover"
+                        />
+                        <div className="p-3 text-sm text-gray-700">Aerial</div>
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1068,13 +1284,27 @@ export default function PortfolioFinalRedesign() {
       </section>
 
       <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
-
-      {/* About + Process (kept minimal) */}
+      <BenefitsSection />
+      {/* About + Process + Testimonials */}
       <section
         aria-label="About, Process & Testimonials"
         id="about-section"
         className="px-4 sm:px-6 lg:px-8"
       >
+        <div className="max-w-7xl mx-auto mb-6">
+          <div className="text-xs font-medium tracking-wider text-gray-400 uppercase">
+            About & Process
+          </div>
+          <h2 className="mt-2 text-3xl sm:text-4xl font-extrabold text-black">
+            Real estate focused editing, end to end
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-gray-600 max-w-3xl">
+            Instead of juggling multiple freelancers, you get one editor who
+            understands listings, social, and agent expectations — from raw
+            footage upload to final export.
+          </p>
+        </div>
+
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 p-6 about-hero card-deep">
             <div className="flex flex-col sm:flex-row gap-6 items-start">
@@ -1097,13 +1327,13 @@ export default function PortfolioFinalRedesign() {
                 </h3>
                 <p className="mt-2 text-gray-700 text-sm sm:text-base max-w-2xl">
                   I specialize in turning raw listing footage into clean,
-                  cinematic videos that make properties stand out on MLS, YouTube
-                  and social platforms.
+                  cinematic videos that make properties stand out on MLS,
+                  YouTube and social platforms.
                 </p>
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/60">
+            <div className="mt-8 pt-6 border-top border-white/60">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <h4 className="font-semibold text-black text-sm sm:text-base">
                   How the edit process works
@@ -1124,15 +1354,24 @@ export default function PortfolioFinalRedesign() {
                       {n}
                     </div>
                     <div className="font-semibold">
-                      {["Share footage", "Edit & polish", "Review", "Final delivery"][n - 1]}
+                      {
+                        [
+                          "Share footage",
+                          "Edit & polish",
+                          "Review",
+                          "Final delivery",
+                        ][n - 1]
+                      }
                     </div>
                     <div className="text-xs text-gray-600 mt-2">
-                      {[
-                        "Upload your raw clips to Drive / Dropbox and share a link plus a short brief.",
-                        "I handle pacing, cuts, color, sound and exports for the platforms you choose.",
-                        "You review the first cut and send notes. I quickly apply the requested tweaks.",
-                        "You receive final files ready for MLS, YouTube, Instagram, TikTok and ads.",
-                      ][n - 1]}
+                      {
+                        [
+                          "Upload your raw clips to Drive / Dropbox and share a link plus a short brief.",
+                          "I handle pacing, cuts, color, sound and exports for the platforms you choose.",
+                          "You review the first cut and send notes. I quickly apply the requested tweaks.",
+                          "You receive final files ready for MLS, YouTube, Instagram, TikTok and ads.",
+                        ][n - 1]
+                      }
                     </div>
                   </div>
                 ))}
@@ -1140,7 +1379,7 @@ export default function PortfolioFinalRedesign() {
             </div>
           </div>
 
-          <aside className="p-6 glass card-deep sticky top-20">
+          <aside className="p-6 glass card-deep sticky top-24">
             <h4 className="font-semibold mb-2 text-black text-sm sm:text-base">
               Agents & teams I’ve worked with
             </h4>
@@ -1150,32 +1389,50 @@ export default function PortfolioFinalRedesign() {
 
             <div className="space-y-3 text-sm">
               <div className="p-3 rounded-lg bg-white relative">
-                <span className="absolute -top-3 left-3 text-2xl text-indigo-300">“</span>
+                <span className="absolute -top-3 left-3 text-2xl text-indigo-300">
+                  “
+                </span>
                 <p className="pl-4 text-gray-800">
-                  Sold in 7 days after the video went live. The listing looked far better than our usual phone video.
+                  Sold in 7 days after the video went live. The listing looked
+                  far better than our usual phone video.
                 </p>
-                <div className="mt-2 text-xs text-gray-500">— Realtor, Residential</div>
+                <div className="mt-2 text-xs text-gray-500">
+                  — Realtor, Residential
+                </div>
               </div>
 
               <div className="p-3 rounded-lg bg-white relative">
-                <span className="absolute -top-3 left-3 text-2xl text-indigo-300">“</span>
+                <span className="absolute -top-3 left-3 text-2xl text-indigo-300">
+                  “
+                </span>
                 <p className="pl-4 text-gray-800">
-                  Fast, reliable and very clean edits. Perfect for sending to sellers and using across our social channels.
+                  Fast, reliable and very clean edits. Perfect for sending to
+                  sellers and using across our social channels.
                 </p>
-                <div className="mt-2 text-xs text-gray-500">— Agent, Team Lead</div>
+                <div className="mt-2 text-xs text-gray-500">
+                  — Agent, Team Lead
+                </div>
               </div>
             </div>
 
             <div className="mt-6">
-              <h5 className="font-semibold mb-2 text-black text-sm sm:text-base">Quick snapshot</h5>
+              <h5 className="font-semibold mb-2 text-black text-sm sm:text-base">
+                Quick snapshot
+              </h5>
               <div className="flex gap-3 text-sm">
                 <div className="p-3 rounded-lg bg-white text-center flex-1">
-                  <div className="font-bold text-lg text-gray-900">+More views</div>
-                  <div className="text-xs text-gray-600">Clients report stronger engagement on listing videos.</div>
+                  <div className="font-bold text-lg text-gray-900">
+                    +More views
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    Clients report stronger engagement on listing videos.
+                  </div>
                 </div>
                 <div className="p-3 rounded-lg bg-white text-center flex-1">
                   <div className="font-bold text-lg text-gray-900">24–48h</div>
-                  <div className="text-xs text-gray-600">Typical delivery window.</div>
+                  <div className="text-xs text-gray-600">
+                    Typical delivery window.
+                  </div>
                 </div>
               </div>
             </div>
@@ -1202,14 +1459,15 @@ export default function PortfolioFinalRedesign() {
 
       <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
 
-      <QuickActionCTA whatsappLink={WHATSAPP_LINK} targetId="showcase-section" />
-
       {/* Contact */}
       <section id="contact" className="px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto p-6 sm:p-8 glass card-deep">
-          <h3 className="text-2xl font-bold mb-2 text-black">Start Your Edit</h3>
+          <h3 className="text-2xl font-bold mb-2 text-black">
+            Start Your Edit
+          </h3>
           <p className="mb-4 text-gray-700 text-sm">
-            Upload your raw footage to Google Drive, Dropbox, or WeTransfer and share the link below.
+            Upload your raw footage to Google Drive, Dropbox, or WeTransfer and
+            share the link below.
           </p>
 
           <form
@@ -1228,24 +1486,62 @@ export default function PortfolioFinalRedesign() {
             }}
             className="grid grid-cols-1 gap-3 text-sm"
           >
-            <input name="name" required placeholder="Your name" className="px-3 py-2 rounded-lg border bg-white" />
-            <input name="email" required type="email" placeholder="Your email" className="px-3 py-2 rounded-lg border bg-white" />
-            <input name="footageLink" required type="url" placeholder="Raw footage link (Drive / Dropbox / WeTransfer)" className="px-3 py-2 rounded-lg border bg-white" />
-            <textarea name="instructions" placeholder="Editing instructions — style, music vibe, text overlays, references…" className="px-3 py-2 rounded-lg border bg-white h-28" />
+            <input
+              name="name"
+              required
+              placeholder="Your name"
+              className="px-3 py-2 rounded-lg border bg-white"
+            />
+            <input
+              name="email"
+              required
+              type="email"
+              placeholder="Your email"
+              className="px-3 py-2 rounded-lg border bg-white"
+            />
+            <input
+              name="footageLink"
+              required
+              type="url"
+              placeholder="Raw footage link (Drive / Dropbox / WeTransfer)"
+              className="px-3 py-2 rounded-lg border bg-white"
+            />
+            <textarea
+              name="instructions"
+              placeholder="Editing instructions — style, music vibe, text overlays, references…"
+              className="px-3 py-2 rounded-lg border bg-white h-28"
+            />
             <div className="flex justify-end gap-3 mt-2">
-              <button type="submit" className="px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold">Send Request</button>
-              <a href={WHATSAPP_LINK} className="px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold">WhatsApp</a>
+              <button
+                type="submit"
+                className="px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold"
+              >
+                Send Request
+              </button>
+              <a
+                href={WHATSAPP_LINK}
+                className="px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold"
+              >
+                WhatsApp
+              </a>
             </div>
           </form>
         </div>
       </section>
 
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-gray-500">
-        <div className="mb-2">Let’s create videos that make buyers fall in love with properties.</div>
+        <div className="mb-2">
+          Let’s create videos that make buyers fall in love with properties.
+        </div>
         <div>© {new Date().getFullYear()} Aamir — Real Estate Video Editing</div>
       </footer>
 
-      <Modal open={modal.open} embedUrl={modal.embedUrl} title={modal.title} onClose={closeModal} />
+      <Modal
+        open={modal.open}
+        embedUrl={modal.embedUrl}
+        title={modal.title}
+        onClose={closeModal}
+      />
     </div>
   );
 }

@@ -454,6 +454,24 @@ export default function Portfolio() {
           <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="px-7 py-3 rounded-full bg-[var(--accent)] text-sm font-semibold shadow-xl">Book a slot on WhatsApp</a>
         </footer>
 
+        {/* ===== QUICK WHATSAPP BUTTON (floating) ===== */}
+        <a
+          href={WHATSAPP_LINK}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          className="quick-wa-btn"
+        >
+          <span className="quick-wa-icon" aria-hidden>
+            {/* WhatsApp icon (simple) */}
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="block">
+              <path d="M20.52 3.48A11.87 11.87 0 0012 .5C6.21.5 1.5 5.21 1.5 11c0 1.93.5 3.77 1.45 5.39L.25 23.5l7.32-1.92A11.8 11.8 0 0012 22.5c5.79 0 10.5-4.71 10.5-10.5 0-3.02-1.17-5.8-3.98-7.52z" fill="white"/>
+              <path d="M17.2 14.1c-.3-.15-1.77-.87-2.05-.97-.28-.1-.48-.15-.68.15-.2.3-.78.97-.96 1.17-.18.2-.36.22-.66.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.61.13-.13.3-.36.45-.54.15-.18.2-.3.3-.5.1-.2 0-.38-.02-.53-.03-.15-.68-1.64-.93-2.26-.24-.6-.49-.52-.68-.53-.18-.01-.38-.01-.58-.01-.2 0-.53.07-.81.36-.28.3-1.06 1.04-1.06 2.53 0 1.49 1.09 2.93 1.24 3.14.15.2 2.14 3.37 5.18 4.6 3.04 1.23 3.04.82 3.59.77.55-.05 1.77-.72 2.02-1.41.25-.69.25-1.28.18-1.41-.07-.12-.26-.2-.56-.35z" fill="#13B53A"/>
+            </svg>
+          </span>
+          <span className="quick-wa-label">Chat</span>
+        </a>
+
         <style jsx>{`
           :root { --accent:#ff3b3b; }
 
@@ -591,9 +609,63 @@ export default function Portfolio() {
             .modern-case-title { font-size: 16px; }
             .modern-about-card { padding: 20px !important; }
           }
+
+          /* ===== QUICK WHATSAPP BUTTON STYLES ===== */
+          .quick-wa-btn {
+            position: fixed;
+            right: 20px;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            z-index: 60;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(180deg, var(--accent), #ff6b6b);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 999px;
+            box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+            text-decoration: none;
+            transform: translateY(0);
+            transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+            font-weight: 700;
+            font-size: 14px;
+            backdrop-filter: blur(6px);
+            -webkit-tap-highlight-color: transparent;
+          }
+          .quick-wa-btn:hover, .quick-wa-btn:focus {
+            transform: translateY(-6px);
+            box-shadow: 0 22px 56px rgba(0,0,0,0.28);
+            outline: none;
+          }
+          .quick-wa-btn:active { transform: translateY(-2px); }
+
+          .quick-wa-icon {
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            width:36px;
+            height:36px;
+            border-radius:999px;
+            background: rgba(255,255,255,0.12);
+            flex-shrink:0;
+            padding:4px;
+          }
+          .quick-wa-label { display:inline-block; margin-right:2px; }
+
+          /* Hide label on very small screens to save space, show only icon */
+          @media (max-width:480px) {
+            .quick-wa-btn { padding: 8px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); }
+            .quick-wa-label { display:none; }
+            .quick-wa-icon { width:40px; height:40px; }
+          }
+
+          /* Respect prefers-reduced-motion */
+          @media (prefers-reduced-motion: reduce) {
+            .quick-wa-btn, .quick-wa-btn:hover, .quick-wa-btn:focus, .quick-wa-btn:active { transition: none; transform: none; }
+            .shine { animation: none; }
+          }
         `}</style>
       </div>
     </>
   );
 }
-

@@ -1,379 +1,855 @@
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRef, useState, useEffect } from 'react';
+// pages/index.jsx — Refactored & modernized single-file page
+import Head from "next/head";
+import Link from "next/link";
+import { useEffect, useState, useRef, useCallback } from "react";
 
-// Next.js single-file homepage (pages/index.jsx)
-// Improvements: consistent spacing, responsive-optimized layout, accessible controls,
-// evenly-spaced sections, and clear visual hierarchy for all screen sizes.
+/*
+  pages/index.jsx — Refactored & modernized single-file page
+  - Cleaner structure: Nav, Hero, About, Services, Testimonials, Contact, Footer
+  - Accessibility improvements (aria, keyboard focus, semantic tags)
+  - Theme handling with localStorage + prefers-color-scheme fallback
+  - Reusable small components and helpers (cls)
+  - Tailwind-first styling + small scoped CSS for glass + 3D card effect
+  - Conversion-first CTA, clearer hierarchy and spacing
+
+  NOTES:
+  - This file expects Tailwind CSS to be configured in the project.
+  - Replace image URLs and the WhatsApp number via env or inline values.
+*/
+
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919905689072";
+const WHATSAPP_MESSAGE = encodeURIComponent(
+  "Hi Aamir — I'm interested in your services (video / thumbnail / website). Could you share pricing & turnaround?"
+);
+const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
+
+const services = [
+  {
+    id: "thumbnail",
+    title: "Thumbnail Design",
+    lead: "Data-driven thumbnails that increase CTR and session time.",
+    href: "/portfolio",
+    icon: ThumbnailIcon,
+  },
+  {
+    id: "video",
+    title: "Video Production",
+    lead: "Cinematic storytelling optimized for YouTube, Reels, Shorts.",
+    href: "/portfoliovideo",
+    icon: VideoIcon,
+  },
+  {
+    id: "web",
+    title: "Website Development",
+    lead: "Fast, SEO-friendly websites built for conversion.",
+    href: "https://weburone.com",
+    icon: WebIcon,
+  },
+];
+
+const testimonialsSeed = [
+  { who: "Ritu — Realtor", text: "Sold in 5 days after the video — incredible work." },
+  { who: "Sam — Creator", text: "Thumbnails doubled my CTR in two weeks." },
+  { who: "Lina — Startup", text: "Fast turnaround and professional delivery." },
+];
+
+// tiny helper for conditional classes (small and dependency-free)
+function cls(...args) {
+  return args.filter(Boolean).join(" ");
+}
 
 export default function Home() {
-  const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '919905689072';
-  const WHATSAPP_MESSAGE = encodeURIComponent(
-    "Hi Aamir, I'm interested in your services — thumbnails, video editing, or website work. Could you share pricing and turnaround?"
-  );
-  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
-
-  const services = [
-    {
-      id: 'thumbnail',
-      title: 'Thumbnail Design',
-      desc: 'Data-driven thumbnails that increase CTR and session time.',
-      href: '/portfolio',
-      accent: 'from-[#FF7A59] to-[#FFD56B]',
-      icon: ThumbnailSVG,
-    },
-    {
-      id: 'video',
-      title: 'Video Production',
-      desc: 'Cinematic storytelling optimized for YouTube, Reels, Shorts.',
-      href: '/portfoliovideo',
-      accent: 'from-[#6D5CFF] to-[#8BE5FF]',
-      icon: VideoSVG,
-    },
-    {
-      id: 'web',
-      title: 'Website Development',
-      desc: 'Fast, SEO-friendly websites built for conversion.',
-      href: 'https://weburone.com',
-      accent: 'from-[#00C6A7] to-[#0077FF]',
-      icon: WebSVG,
-    },
-  ];
-
-  const uniques = [
-    { k: 'Results-first', v: 'Design & video made to move measurable metrics.', icon: RocketSVG, color: 'from-[#FF7A59] to-[#FFD56B]' },
-    { k: 'Transparent Pricing', v: 'Clear packages & milestone-based timelines.', icon: DollarSVG, color: 'from-[#6D5CFF] to-[#8BE5FF]' },
-    { k: 'Fast Turnaround', v: 'Optimized workflows — fast & reliable delivery.', icon: ClockSVG, color: 'from-[#00C6A7] to-[#0077FF]' },
-  ];
-
+  const [theme, setTheme] = useState("day"); // <-- default set to 'day' now
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const mounted = useRef(false);
 
+  // Initialize theme with localStorage or prefers-color-scheme
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    mounted.current = true;
+    try {
+      const saved = typeof window !== "undefined" ? localStorage.getItem("aamir_theme") : null;
+      if (saved === "day" || saved === "night") {
+        setTheme(saved);
+      } else if (typeof window !== "undefined") {
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        setTheme(prefersDark ? "night" : "day");
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
   }, []);
+
+  // persist theme
+  useEffect(() => {
+    if (!mounted.current) return;
+    try {
+      localStorage.setItem("aamir_theme", theme);
+    } catch (e) {}
+  }, [theme]);
+
+  // keyboard shortcut: D toggles theme
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key && e.key.toLowerCase() === "d") setTheme((t) => (t === "day" ? "night" : "day"));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const toggleTheme = useCallback(() => setTheme((t) => (t === "day" ? "night" : "day")), []);
 
   return (
     <>
       <Head>
-        <title>Aamir — Creative Design, Video & Web</title>
-        <meta name="description" content="Creative solutions in design, video and web development." />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Transform Your Brand — Cinematic Video, Thumbnails & Sites</title>
+        <meta name="description" content="Cinematic videos, thumbnails and fast websites designed to convert. Day/Night UI with polished glass cards." />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet" />
       </Head>
 
-      <main className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-100 text-gray-900">
-        {/* NAV */}
-        <nav className={`fixed inset-x-0 top-4 z-50 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 transition-all ${scrolled ? 'backdrop-blur-sm bg-white/70 shadow' : ''}`} aria-label="Main navigation">
-          <div className="flex items-center justify-between gap-4 rounded-2xl p-3">
-            <a href="/" className="flex items-center gap-3 no-underline">
-              <div className="h-10 w-10 rounded-md bg-gradient-to-tr from-[#FF7A59] to-[#FFB86B] flex items-center justify-center text-white font-bold shadow">A</div>
-              <div className="hidden sm:block">
-                <div className="font-semibold leading-tight text-gray-900">Aamir</div>
-                <div className="text-xs text-gray-500">Creative • Video • Web</div>
-              </div>
-            </a>
+      <main className={cls("min-h-screen font-sans", theme === "day" ? "theme-day" : "theme-night")}>
+        <Nav
+          theme={theme}
+          toggleTheme={toggleTheme}
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+          whatsapp={WHATSAPP_LINK}
+        />
 
-            <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-              <a href="#services" className="hover:text-gray-900">Services</a>
-              <a href="#unique" className="hover:text-gray-900">Why Us</a>
-              <a href="#contact" className="hover:text-gray-900">Contact</a>
-            </div>
+        <Hero theme={theme} whatsapp={WHATSAPP_LINK} />
 
-            <div className="flex items-center gap-3">
-              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF4F4F] text-white font-semibold shadow transform hover:-translate-y-0.5">Start Your Project</a>
+        
 
-              <button onClick={() => setMobileOpen(s => !s)} aria-expanded={mobileOpen} aria-label="Toggle menu" className="md:hidden inline-flex items-center justify-center p-2 rounded-md bg-white/90 shadow-sm">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-gray-700"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </button>
-            </div>
-          </div>
+        <Services theme={theme} services={services} whatsapp={WHATSAPP_LINK} />
 
-          {mobileOpen && (
-            <div className="mt-3 md:hidden bg-white/95 backdrop-blur rounded-xl p-4 shadow-lg">
-              <ul className="flex flex-col gap-3 text-sm">
-                <li><a href="#services" onClick={() => setMobileOpen(false)} className="block">Services</a></li>
-                <li><a href="#unique" onClick={() => setMobileOpen(false)} className="block">Why Us</a></li>
-                <li><a href="#contact" onClick={() => setMobileOpen(false)} className="block">Contact</a></li>
-                <li><a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex w-full items-center justify-center px-4 py-2 rounded-full bg-[#FF4F4F] text-white font-semibold">Start Your Project</a></li>
-              </ul>
-            </div>
-          )}
-        </nav>
+        <Testimonials theme={theme} items={testimonialsSeed} />
 
-        {/* HERO */}
-        <header className="pt-28 lg:pt-36">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              <div className="lg:col-span-7">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">Creative Design, Video & Web — built to perform</h1>
-                <p className="text-lg text-gray-700 max-w-2xl mb-6">Visuals and websites designed for attention and conversion. Fast delivery, clear pricing and international standards.</p>
+        <About theme={theme} whatsapp={WHATSAPP_LINK} />
 
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
-                  <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-3 px-6 py-3 rounded-full bg-[#FF4F4F] text-white font-semibold shadow-md transition-transform hover:-translate-y-1">Start Your Project</a>
-                  <a href="#services" className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-full border border-gray-200 text-sm">Our Services</a>
-                </div>
+        <ContactSection theme={theme} whatsapp={WHATSAPP_LINK} />
 
-                <div className="text-xs text-gray-500">Transparent pricing • International delivery • 30-day support</div>
-              </div>
+        <Footer theme={theme} />
 
-              <div className="lg:col-span-5">
-                <LayeredTrustPanel whatsapp={WHATSAPP_LINK} />
-              </div>
-            </div>
-          </div>
-        </header>
+        {/* WhatsApp FAB integration (only added component render) */}
+        <WhatsAppFab theme={theme} whatsapp={WHATSAPP_LINK} />
 
-        {/* Spacer between hero and services */}
-        <div className="h-12 sm:h-20 lg:h-28" aria-hidden="true" />
-
-        {/* OUR SERVICES - generous spacing, responsive grid, consistent card height */}
-        <section id="services" className="py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold">Our Services</h2>
-              <p className="text-gray-600 max-w-2xl mx-auto mt-2">Clear packages that make it easy to choose — designed to get results quickly.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-              {services.map((s) => (
-                <ServiceCardResponsive key={s.id} s={s} whatsapp={WHATSAPP_LINK} />
-              ))}
-            </div>
-
-            <div className="mt-10 text-center">
-              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-tr from-[#6D5CFF] to-[#8BE5FF] text-white font-semibold shadow-lg">Get a quick quote</a>
-            </div>
-          </div>
-        </section>
-
-        {/* WHAT MAKES US UNIQUE - clear 3-column layout with spacing */}
-                {/* Spacer between services and what makes us unique */}
-        <div className="h-12 sm:h-20 lg:h-28" aria-hidden="true" />
-
-        <section id="unique" className="py-12 sm:py-16 lg:py-20 bg-gray-50">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-8">
-              <h3 className="text-xl sm:text-2xl font-bold">What Makes Us Unique</h3>
-              <p className="text-gray-600 max-w-2xl mx-auto mt-2">Short, measurable strengths you can verify on day one.</p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {uniques.map((u) => (
-                <UniqueResponsiveCard key={u.k} u={u} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* DELIVERY TIMELINE - kept compact and evenly spaced */}
-        <section className="py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h3 className="text-xl font-bold mb-6">How We Deliver</h3>
-            <TimelineResponsive />
-          </div>
-        </section>
-
-        {/* CLIENT CARE */}
-        <section className="py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h3 className="text-xl font-bold mb-6">Client Care</h3>
-            <ClientCare />
-          </div>
-        </section>
-
-        {/* TRUST GRID */}
-        <section className="py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h3 className="text-xl font-bold mb-6">Trust & Compliance</h3>
-            <TrustGrid />
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="py-12 sm:py-16 lg:py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <div className="rounded-3xl p-8 text-center shadow-lg bg-white border border-gray-100">
-              <h3 className="text-2xl font-bold mb-3">Let’s build something extraordinary together—wherever you are.</h3>
-              <p className="text-sm text-gray-600 mb-6">From thumbnails and video to full-stack web development, we combine creativity, speed, and reliability.</p>
-              <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[#FF4F4F] text-white font-semibold shadow-md">👉 Work With Us</a>
-            </div>
-          </div>
-        </section>
-
-        <footer className="py-10 text-center text-sm text-gray-500">
-          <div>© {new Date().getFullYear()} Aamir — Thumbnails • Video • Websites</div>
-        </footer>
-
-        {/* Styles: small helper styles, mobile-first */}
+        {/* small scoped styles for the glass + card 3D effect (keeps layout in Tailwind) */}
         <style jsx>{`
-          /* Card interactions with reduced-motion respect */
-          @media (prefers-reduced-motion: no-preference) {
-            .interactive-card { transition: transform 240ms cubic-bezier(.2,.9,.3,1), box-shadow 240ms; }
-            .interactive-card:hover { transform: translateY(-6px); }
-          }
+          :root { --card-radius: 1rem; --glass-strength: 0.06; }
+          .theme-night { background: linear-gradient(180deg,#000,#071024 140%); color: #fff; }
+          .theme-day { background: linear-gradient(180deg,#f8fafc,#ffffff 140%); color: #111; }
 
-          /* Keep gradient backgrounds from bleeding into dark text on older browsers */
-          .gradient-bg { background-image: linear-gradient(135deg,var(--tw-gradient-from),var(--tw-gradient-to)); }
+          /* service card base */
+          .glass-card { border-radius: var(--card-radius); overflow: hidden; padding: 1rem; transition: transform .22s cubic-bezier(.2,.9,.3,1), box-shadow .22s; will-change: transform; }
+          .glass-card:focus-within { box-shadow: 0 12px 40px rgba(2,6,23,0.2); }
+
+          /* day/night glass */
+          .glass-day { background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,var(--glass-strength)); }
+          .glass-night { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,var(--glass-strength)); }
+
+          /* subtle 3D tilt transform preserved inline via style attr for perf */
+          .icon-ring { position: absolute; inset: -8px; border-radius: 999px; pointer-events: none; opacity: .9; }
         `}</style>
       </main>
     </>
   );
 }
 
-// ---------------- Components ----------------
-
-function ServiceCardResponsive({ s, whatsapp }) {
-  const Icon = s.icon;
+/* ---------------- NAV ---------------- */
+function Nav({ theme, toggleTheme, mobileOpen, setMobileOpen, whatsapp }) {
   return (
-    <article className="interactive-card flex flex-col rounded-2xl p-6 bg-white shadow-sm border border-gray-50 h-full">
-      <div className="flex items-start gap-4">
-        <div className={`w-16 h-16 rounded-lg flex items-center justify-center text-white bg-gradient-to-tr ${s.accent} flex-shrink-0`} style={{ boxShadow: '0 12px 30px rgba(16,24,40,0.06)' }}>
-          <Icon className="w-7 h-7" />
+    <nav className="fixed inset-x-0 top-5 z-50 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Primary">
+      <div className={cls("flex items-center justify-between gap-4 rounded-2xl p-3", theme === "day" ? "bg-white/90 border border-black/6" : "bg-black/40 border border-white/6")}>
+        <Link href="/" className="flex items-center gap-3" aria-label="Aamir — Home">
+          <div className={cls("h-10 w-10 rounded-md flex items-center justify-center font-bold", theme === "day" ? "bg-black text-white" : "bg-white/10 text-white")}>
+            A
+          </div>
+          <div className="hidden sm:block">
+            <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Aamir</div>
+            <div className={cls("text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>Cinematic Video • Thumbnails • Websites</div>
+          </div>
+        </Link>
+
+        <div className="hidden md:flex items-center gap-6">
+          <a href="#services" className={cls("hover:underline", theme === "day" ? "text-black/80" : "text-white/80")}>
+            Services
+          </a>
+          {/* <a href="#work" className={cls("hover:underline", theme === "day" ? "text-black/80" : "text-white/80")}>
+            Work
+          </a> */}
+          <a href="#contact" className={cls("hover:underline", theme === "day" ? "text-black/80" : "text-white/80")}>
+            Contact
+          </a>
         </div>
 
-        <div className="flex-1">
-          <h4 className="font-semibold text-lg">{s.title}</h4>
-          <p className="text-sm text-gray-600 mt-1">{s.desc}</p>
+        <div className="flex items-center gap-3">
+          <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={cls("hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold shadow-sm", theme === "day" ? "bg-black text-white" : "bg-indigo-500 text-white")}>
+            <WhatsAppIcon size={16} className="inline-block" />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </a>
+
+          <button onClick={toggleTheme} aria-label='Toggle day/night (press D)' className={cls("px-3 py-2 rounded-full flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-2", theme === "day" ? "bg-black text-white" : "bg-white/6 text-white")}>
+            {theme === "day" ? <SunIcon /> : <MoonIcon />}
+            <span className="text-xs">{theme === "day" ? "Day" : "Night"}</span>
+          </button>
+
+          <button onClick={() => setMobileOpen((s) => !s)} className="p-2 rounded-md md:hidden focus:outline-none">
+            <MenuIcon />
+          </button>
         </div>
       </div>
 
-      <div className="mt-6 mt-auto flex items-center justify-between gap-3">
-        {s.href && s.href.startsWith('http') ? (
-          <a href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 text-sm font-semibold">Visit site</a>
-        ) : (
-          <Link href={s.href} className="inline-flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 text-sm font-semibold">View portfolio</Link>
+      {mobileOpen && (
+        <div className={cls("mt-3 md:hidden rounded-xl p-4 border", theme === "day" ? "bg-white/90 text-black border-black/6" : "bg-black/60 text-white border-white/6")}>
+          <ul className="flex flex-col gap-3">
+            <li>
+              <a href="#services" onClick={() => setMobileOpen(false)} className="block">Services</a>
+            </li>
+            {/* <li>
+              <a href="#work" onClick={() => setMobileOpen(false)} className="block">Work</a>
+            </li> */}
+            <li>
+              <a href="#contact" onClick={() => setMobileOpen(false)} className="block">Contact</a>
+            </li>
+            <li>
+              <a href={whatsapp} className="mt-2 block text-center px-4 py-2 rounded-full bg-black text-white">Start Project</a>
+            </li>
+          </ul>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+/* ---------------- HERO ---------------- */
+function Hero({ theme, whatsapp }) {
+  return (
+    <header className="pt-28 lg:pt-36 pb-8 relative overflow-hidden">
+      <BackgroundBlobs theme={theme} />
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-7">
+            <h1 className={cls("leading-tight font-extrabold text-3xl sm:text-4xl md:text-5xl", theme === "day" ? "text-black" : "text-white")}>
+              Transform your brand with <span className="text-indigo-400/90">cinematic video</span>, scroll-stopping thumbnails & high-converting sites.
+            </h1>
+
+            <p className={cls("mt-4 text-lg max-w-2xl", theme === "day" ? "text-black/70" : "text-white/75")}>
+              I craft visuals that don’t just look good — they drive clicks, leads and sales. Fast turnaround, clear pricing and a cinematic finish.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3 items-center">
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={cls("px-6 py-3 rounded-full font-semibold shadow-md focus:ring-2 focus:ring-offset-2 focus:outline-none", theme === "day" ? "bg-black text-white" : "bg-indigo-500 text-white")}>Let’s Build Your Vision</a>
+              <a href="#services" className={cls("px-4 py-2 rounded-full border text-sm", theme === "day" ? "border-black/10 text-black" : "border-white/10 text-white")}>See Services</a>
+            </div>
+
+            <div className={cls("mt-5 text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>Trusted by realtors, creators & startups • 30-day support</div>
+          </div>
+
+          <aside className="lg:col-span-5">
+            <div className={cls("rounded-3xl p-6 shadow-lg", theme === "day" ? "bg-white/95 border border-black/6" : "bg-white/04 border border-white/6")}>
+              <div className="flex items-center gap-4">
+                <img alt="Aamir profile" src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg" loading="lazy" className="w-20 h-20 rounded-full object-cover shadow" />
+                <div>
+                  <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Aamir — Video & Design</div>
+                  <div className={cls("text-sm", theme === "day" ? "text-black/70" : "text-white/70")}>Cinematic editing, thumbnails & websites</div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+                <div className="text-center">
+                  <div className={cls("font-bold", theme === "day" ? "text-black" : "text-white")}>24–48h</div>
+                  <div className={cls("mt-1 text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>Typical delivery</div>
+                </div>
+                <div className="text-center">
+                  <div className={cls("font-bold", theme === "day" ? "text-black" : "text-white")}>Realtor-First</div>
+                  <div className={cls("mt-1 text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>Optimized formats</div>
+                </div>
+                <div className="text-center">
+                  <div className={cls("font-bold", theme === "day" ? "text-black" : "text-white")}>Fast Support</div>
+                  <div className={cls("mt-1 text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>30-day support</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+/* ---------------- ABOUT ---------------- */
+function About({ theme, whatsapp }) {
+  return (
+    <section id="about" className="py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-6">
+            <h2 className={cls("text-2xl font-bold", theme === "day" ? "text-black" : "text-white")}>About me</h2>
+            <p className={cls("mt-4 max-w-xl", theme === "day" ? "text-black/70" : "text-white/70")}>
+              I blend creative storytelling with technical workflow to deliver assets that look premium and perform under real marketing conditions. I work with realtors, creators and early-stage startups.
+            </p>
+
+            <div className="mt-6 grid grid-cols-3 gap-4">
+              <StatCard theme={theme} title="40%" subtitle="Avg inquiry increase (mock)" />
+              <StatCard theme={theme} title="2x" subtitle="Typical CTR uplift" />
+              <StatCard theme={theme} title="24–48h" subtitle="Fast turnaround" />
+            </div>
+
+            <p className={cls("mt-4 max-w-xl", theme === "day" ? "text-black/70" : "text-white/70")}>
+              I began as a creator — learning headline hooks, thumbnail formulas and quick landing pages. Today I deliver that same velocity and conversion knowledge to small businesses without agency overhead.
+            </p>
+
+            <div className="mt-4 flex gap-3">
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={cls("px-4 py-2 rounded-full flex items-center gap-2", theme === "day" ? "bg-black text-white" : "bg-indigo-500 text-white")}>
+                <WhatsAppIcon size={16} />
+                Chat on WhatsApp
+              </a>
+              <a href="#contact" className={cls("px-4 py-2 rounded-full border", theme === "day" ? "border-black/10 text-black" : "border-white/10 text-white")}>Start Project</a>
+            </div>
+          </div>
+
+          <div className="lg:col-span-6 flex justify-center lg:justify-end">
+  <div
+    className={cls(
+      "rounded-3xl overflow-hidden shadow-2xl p-6 transition-all duration-500",
+      theme === "day"
+        ? "bg-white/95 border border-black/10"
+        : "bg-white/10 border border-white/10 backdrop-blur-md"
+    )}
+    style={{ maxWidth: 420 }}
+  >
+    <div className="relative w-full h-64 rounded-xl overflow-hidden group">
+      {/* Image without grayscale */}
+      <img
+        src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg"
+        alt="Aamir cinematic"
+        loading="lazy"
+        className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
+      />
+
+      {/* Overlay gradient for cinematic depth */}
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"
+        aria-hidden
+      />
+
+      {/* Text overlay */}
+      <div className="absolute bottom-4 left-4 text-white">
+        <div className="font-semibold text-lg tracking-wide">
+          Aamir — Cinematic Editor
+        </div>
+        <div className="text-xs opacity-80">
+          Creativity • Speed • Conversion
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatCard({ theme, title, subtitle }) {
+  return (
+    <div className={cls("rounded-xl p-4", theme === "day" ? "bg-white/95 border border-black/6" : "bg-white/03 border border-white/6")}>
+      <div className="font-bold text-lg">{title}</div>
+      <div className={cls("text-xs mt-1", theme === "day" ? "text-black/60" : "text-white/60")}>{subtitle}</div>
+    </div>
+  );
+}
+/* ---------------- SERVICES (updated again) ---------------- */
+function Services({ theme, services, whatsapp }) {
+  return (
+    <section id="services" className="py-14 sm:py-20 lg:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Headline + benefit subtext */}
+        <div className="text-center mb-10">
+          <h2
+            className={cls(
+              "text-3xl sm:text-4xl font-extrabold tracking-tight",
+              theme === "day" ? "text-black" : "text-white"
+            )}
+          >
+            Services — built to win attention & conversions
+          </h2>
+          <p
+            className={cls(
+              "mt-3 max-w-2xl mx-auto text-sm sm:text-base",
+              theme === "day" ? "text-black/70" : "text-white/70"
+            )}
+          >
+            Three core offers: high-converting video edits, click-magnet thumbnails, and fast,
+            conversion-ready websites. Pick what you need — or combine all three.
+          </p>
+        </div>
+
+        {/* Cards grid (equal height) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
+          {services.map((s, i) => (
+            <ServiceCard key={s.id} s={s} theme={theme} whatsapp={whatsapp} index={i} />
+          ))}
+        </div>
+
+        <div className="mt-8 text-center text-xs">
+          <span className={cls(theme === "day" ? "text-black/60" : "text-white/60")}>
+            30-day support • Fast revisions • Secure delivery
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceCard({ s, theme, whatsapp, index }) {
+  // gradient accents per service id
+  const gradients = {
+    video: "linear-gradient(135deg,#7c3aed 0%,#06b6d4 100%)",
+    thumbnail: "linear-gradient(135deg,#06b6d4 0%,#60a5fa 100%)",
+    web: "linear-gradient(135deg,#f97316 0%,#f59e0b 100%)",
+  };
+  const accent = gradients[s.id] || "linear-gradient(135deg,#60a5fa,#a78bfa)";
+  const Icon = s.icon;
+  const isExternal = s.href && /^(https?:)?\/\//.test(s.href);
+
+  return (
+    <article
+      className={cls(
+        "relative h-full flex flex-col rounded-2xl border p-6 transition-all duration-300 ease-out group",
+        theme === "day"
+          ? "bg-white/90 border-black/6 shadow-sm hover:shadow-xl"
+          : "bg-white/6 border-white/10 hover:border-white/30 hover:shadow-[0_18px_45px_rgba(0,0,0,0.6)]"
+      )}
+      style={{ transform: "translateZ(0)" }}
+      tabIndex={0}
+      aria-labelledby={`svc-${s.id}-title`}
+    >
+      {/* TOP: icon + title + copy (flex-1 to keep equal height) */}
+      <div className="flex-1 flex flex-col gap-4">
+        <div className="flex items-start gap-4">
+          {/* Icon */}
+          <div className="flex-shrink-0">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center shadow-sm transform transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105"
+              style={{
+                background: accent,
+                boxShadow:
+                  theme === "day"
+                    ? "0 10px 30px rgba(15,23,42,0.10)"
+                    : "0 12px 38px rgba(0,0,0,0.65)",
+              }}
+              aria-hidden
+            >
+              <Icon style={{ width: 34, height: 34, color: "white" }} />
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between gap-3">
+              <h4
+                id={`svc-${s.id}-title`}
+                className={cls(
+                  "text-lg sm:text-xl font-semibold leading-tight",
+                  theme === "day" ? "text-black" : "text-white"
+                )}
+              >
+                {s.title}
+              </h4>
+
+              {/* micro-badge */}
+              <span
+                className={cls(
+                  "text-[11px] rounded-full px-2 py-1 font-medium whitespace-nowrap",
+                  theme === "day" ? "bg-black/5 text-black/80" : "bg-white/10 text-white/80"
+                )}
+              >
+                {s.id === "video"
+                  ? "YouTube & Reels"
+                  : s.id === "thumbnail"
+                  ? "CTR-focused"
+                  : "Conversion-ready"}
+              </span>
+            </div>
+
+            <p
+              className={cls(
+                "mt-2 text-sm",
+                theme === "day" ? "text-black/70" : "text-white/70"
+              )}
+            >
+              {s.lead}
+            </p>
+          </div>
+        </div>
+
+        {/* Quick highlights */}
+        <ul
+          className={cls(
+            "mt-2 grid grid-cols-2 gap-2 text-[11px] sm:text-xs",
+            theme === "day" ? "text-black/60" : "text-white/60"
+          )}
+        >
+          {s.id === "video" && (
+            <>
+              <li>24–48h typical delivery</li>
+              <li>Color grade & sound polish</li>
+              <li>Vertical & horizontal exports</li>
+              <li>Hooks & pacing optimized</li>
+            </>
+          )}
+          {s.id === "thumbnail" && (
+            <>
+              <li>Thumbnail concepts & variants</li>
+              <li>Readable on mobile feeds</li>
+              <li>Brand-consistent styling</li>
+              <li>Source files on request</li>
+            </>
+          )}
+          {s.id === "web" && (
+            <>
+              <li>Fast, mobile-first build</li>
+              <li>Lead capture & forms</li>
+              <li>SEO & basic analytics ready</li>
+              <li>Easy future updates</li>
+            </>
+          )}
+        </ul>
+      </div>
+
+      {/* BOTTOM: CTAs pinned, same position for all cards */}
+      <div className="mt-5 flex flex-wrap gap-3 items-center">
+        {/* Primary CTA: WhatsApp / Enquire */}
+        <a
+          href={whatsapp}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className={cls(
+            "inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm transition-transform duration-200 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2",
+            theme === "day"
+              ? "bg-black text-white focus:ring-black/40"
+              : "bg-indigo-500 text-white focus:ring-indigo-400"
+          )}
+          aria-label={`Enquire about ${s.title} on WhatsApp`}
+        >
+          <WhatsAppIcon size={14} />
+          Enquire
+        </a>
+
+        {/* Secondary CTA: View portfolio (stronger than plain text link) */}
+        {s.href &&
+          (isExternal ? (
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className={cls(
+                "inline-flex items-center justify-center px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors duration-200",
+                theme === "day"
+                  ? "border-black/10 text-black/80 hover:bg-black/5"
+                  : "border-white/20 text-white/80 hover:bg-white/10"
+              )}
+              aria-label={`View ${s.title} portfolio`}
+            >
+              View portfolio
+              <span aria-hidden className="ml-1">
+                ↗
+              </span>
+            </a>
+          ) : (
+            <Link
+              href={s.href}
+              onClick={(e) => e.stopPropagation()}
+              className={cls(
+                "inline-flex items-center justify-center px-4 py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors duration-200",
+                theme === "day"
+                  ? "border-black/10 text-black/80 hover:bg-black/5"
+                  : "border-white/20 text-white/80 hover:bg-white/10"
+              )}
+              aria-label={`View ${s.title} portfolio`}
+            >
+              View portfolio
+              <span aria-hidden className="ml-1">
+                →
+              </span>
+            </Link>
+          ))}
+      </div>
+
+      {/* subtle bottom accent bar */}
+      <div
+        aria-hidden
+        className={cls(
+          "pointer-events-none absolute left-6 right-6 bottom-0 h-0.5 rounded-full origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300",
+          theme === "day" ? "bg-black/10" : "bg-white/25"
         )}
+      />
 
-        <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-500">Ask price</a>
-      </div>
+      <style jsx>{`
+        @media (prefers-reduced-motion: reduce) {
+          .group-hover\\:-translate-y-1,
+          .group-hover\\:scale-105,
+          .hover\\:-translate-y-0\\.5,
+          .group-hover\\:scale-x-100 {
+            transition: none !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
     </article>
   );
 }
 
-function UniqueResponsiveCard({ u }) {
-  const Icon = u.icon;
+/* ---------------- WhatsApp FAB (integrated) ---------------- */
+function WhatsAppFab({ theme, whatsapp }) {
   return (
-    <div className="rounded-2xl p-5 bg-white shadow-sm border border-gray-50 flex gap-4 items-start">
-      <div className={`w-12 h-12 rounded-md flex items-center justify-center text-white bg-gradient-to-tr ${u.color}`}>
-        <Icon className="w-6 h-6" />
-      </div>
-      <div>
-        <div className="font-semibold">{u.k}</div>
-        <div className="text-sm text-gray-600 mt-1">{u.v}</div>
-      </div>
-    </div>
-  );
-}
-
-function TimelineResponsive() {
-  const steps = [
-    { t: '01', title: 'Discovery', desc: 'Understand goals, audiences, and KPIs.' },
-    { t: '02', title: 'Plan', desc: 'Wireframes, scripts, and production plan.' },
-    { t: '03', title: 'Create', desc: 'Design, shoot, code and iterate.' },
-    { t: '04', title: 'Deliver', desc: 'Hand-offs, QA and launch.' },
-  ];
-
-  return (
-    <div className="space-y-6">
-      {steps.map((s) => (
-        <div key={s.t} className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center bg-white shadow font-semibold">{s.t}</div>
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-50 w-full">
-            <div className="font-semibold">{s.title}</div>
-            <div className="text-sm text-gray-600">{s.desc}</div>
-          </div>
+    <>
+      <a
+        href={whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat on WhatsApp"
+        className={cls(
+          "fixed z-50 right-5 bottom-6 flex items-center gap-3 rounded-full p-3 pr-4 shadow-2xl transition-transform duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2",
+          "print:hidden"
+        )}
+        style={{
+          background: theme === "day" ? "white" : "#25D366",
+          color: theme === "day" ? "black" : "white",
+          boxShadow: theme === "day" ? "0 10px 30px rgba(2,6,23,0.08)" : "0 12px 36px rgba(0,0,0,0.5)",
+        }}
+      >
+        <div
+          className={cls(
+            "flex items-center justify-center w-10 h-10 rounded-full shrink-0"
+          )}
+          style={{
+            background: theme === "day" ? "#25D366" : "white",
+            color: "white",
+            boxShadow: "inset 0 -4px 12px rgba(0,0,0,0.08)",
+          }}
+        >
+          <WhatsAppIcon size={18} />
         </div>
-      ))}
-    </div>
+
+        <div className="hidden sm:block">
+          <div className={cls("text-sm font-semibold", theme === "day" ? "text-black" : "text-white")}>Quick chat</div>
+          <div className={cls("text-xs", theme === "day" ? "text-black/60" : "text-white/80")}>Ask about pricing & turnaround</div>
+        </div>
+
+        <style jsx>{`
+          a:hover { transform: translateY(-4px); }
+          @media (prefers-reduced-motion: reduce) {
+            a { transition: none !important; transform: none !important; }
+          }
+        `}</style>
+      </a>
+    </>
   );
 }
 
-function LayeredTrustPanel({ whatsapp }) {
+/* ---------------- TESTIMONIALS ---------------- */
+function Testimonials({ theme, items }) {
   return (
-    <div className="relative w-full">
-      <div className="rounded-3xl p-6 shadow-lg bg-white border border-gray-100">
-        <h4 className="font-bold mb-2">Trusted by clients worldwide</h4>
-        <p className="text-sm text-gray-700 mb-4">Quality, speed & innovation — delivered with care and transparency.</p>
-        <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FF4F4F] text-white font-semibold shadow-sm">Contact</a>
+    <section className="py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8">
+          <h3 className={cls("text-xl font-bold", theme === "day" ? "text-black" : "text-white")}>Trusted by clients</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {items.map((t, i) => (
+            <blockquote key={i} className={cls("rounded-2xl p-6", theme === "day" ? "bg-white/95 border border-black/6" : "bg-white/03 border border-white/6")}>
+              <p className={cls("italic", theme === "day" ? "text-black/80" : "text-white/80")}>
+                “{t.text}”
+              </p>
+              <footer className={cls("mt-4 text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>
+                — {t.who}
+              </footer>
+            </blockquote>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-function ClientCare() {
-  const quotes = [
-    { who: 'Marta — Spain', text: 'They treated our project like their own. Highly recommended.' },
-    { who: 'Jun — Korea', text: 'Fast, respectful communication and outstanding final videos.' },
-    { who: 'Amélie — France', text: 'Transparent process and clear milestones. A safe long-term partner.' },
-  ];
-
+/* ---------------- CONTACT ---------------- */
+function ContactSection({ theme, whatsapp }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {quotes.map((q, idx) => (
-        <blockquote key={idx} className="rounded-xl p-6 bg-white shadow-sm border border-gray-50">
-          <p className="text-sm text-gray-700 italic">“{q.text}”</p>
-          <footer className="mt-4 text-xs text-gray-500">— {q.who}</footer>
-        </blockquote>
-      ))}
-    </div>
+    <section id="contact" className="py-12 sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className={cls("rounded-3xl p-8 text-center", theme === "day" ? "bg-white/95 border border-black/6" : "bg-white/03 border border-white/6")}>
+          <h3 className={cls("text-2xl font-bold", theme === "day" ? "text-black" : "text-white")}>Ready to start?</h3>
+          <p className={cls("mt-2", theme === "day" ? "text-black/70" : "text-white/70")}>Share a brief or drop a WhatsApp message — I usually respond within one business day.</p>
+
+          <ContactForm theme={theme} whatsapp={whatsapp} />
+        </div>
+      </div>
+    </section>
   );
 }
 
-function TrustGrid() {
-  const logos = ['Photoshop', 'Illustrator', 'Premiere Pro', 'After Effects', 'React', 'Node.js'];
+function ContactForm({ theme, whatsapp }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [type, setType] = useState("Video Editing");
+  const [message, setMessage] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim() || !email.trim()) {
+      setNotice("Please enter your name and email.");
+      return;
+    }
+
+    const subject = encodeURIComponent(`New project: ${type} — from ${name}`);
+    const body = encodeURIComponent(`${message}\n\nContact email: ${email}`);
+
+    // open default mail client
+    const mailto = `mailto:contact@aamir.video?subject=${subject}&body=${body}`;
+    window.location.href = mailto;
+    setNotice("Opening your mail app... If nothing happens, try the WhatsApp button.");
+
+    // reset
+    setName("");
+    setEmail("");
+    setType("Video Editing");
+    setMessage("");
+
+    setTimeout(() => setNotice(""), 5000);
+  };
+
   return (
-    <div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 items-center">
-        {logos.map((l) => (
-          <div key={l} className="rounded-xl p-3 bg-white shadow-sm text-center text-xs font-semibold">{l}</div>
-        ))}
+    <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-3" aria-label="Contact form">
+      <div className="grid grid-cols-2 gap-3">
+        <input aria-label="Name" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="input-focus rounded-lg p-3" />
+        <input aria-label="Email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="input-focus rounded-lg p-3" />
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-3 justify-center">
-        <div className="px-3 py-1 bg-white rounded-full text-xs font-semibold">Data Processing Agreement</div>
-        <div className="px-3 py-1 bg-white rounded-full text-xs font-semibold">ISO 9001</div>
-        <div className="px-3 py-1 bg-white rounded-full text-xs font-semibold">GDPR Ready</div>
+      <select aria-label="Project type" value={type} onChange={(e) => setType(e.target.value)} className="input-focus rounded-lg p-3">
+        <option>Video Editing</option>
+        <option>Thumbnail Design</option>
+        <option>Website Creation</option>
+        <option>Other / Consultation</option>
+      </select>
+
+      <textarea aria-label="Project details" value={message} onChange={(e) => setMessage(e.target.value)} rows={4} placeholder="Brief project details (optional)" className="input-focus rounded-lg p-3" />
+
+      <div className="flex items-center justify-center gap-3 mt-2">
+        <button type="submit" className={cls("px-6 py-3 rounded-full font-semibold focus:outline-none focus:ring-2", theme === "day" ? "bg-black text-white" : "bg-indigo-500 text-white")}>
+          Let’s Build Your Vision Together
+        </button>
+        <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="px-4 py-3 rounded-full border text-sm flex items-center gap-2">
+          <WhatsAppIcon size={16} />
+          WhatsApp
+        </a>
       </div>
-    </div>
+
+      {notice && <div className="text-sm mt-2 opacity-90">{notice}</div>}
+    </form>
   );
 }
 
-// ---------------- SVG ICONS ----------------
-
-function ThumbnailSVG(props) {
+/* ---------------- FOOTER ---------------- */
+function Footer({ theme }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><rect x="3" y="4" width="18" height="14" rx="2" stroke="white" strokeWidth="1.5"/><path d="M7 8.5l3 3 2-2 5 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <footer className={cls("py-8 text-center text-sm", theme === "day" ? "text-black/60" : "text-white/60")}>
+      © {new Date().getFullYear()} Aamir — Cinematic Video, Thumbnails & Websites
+    </footer>
   );
 }
 
-function VideoSVG(props) {
+/* ---------------- BACKGROUND BLOBS ---------------- */
+function BackgroundBlobs({ theme }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><rect x="2" y="4" width="16" height="14" rx="2" stroke="white" strokeWidth="1.5"/><path d="M20 8v8" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><path d="M7 10l4 2-4 2V10z" fill="white"/></svg>
+    <svg className="absolute -z-10 left-0 top-0 w-full h-full opacity-30" viewBox="0 0 1440 600" preserveAspectRatio="xMidYMid slice" aria-hidden>
+      <defs>
+        <filter id="bgBlur"><feGaussianBlur stdDeviation="60" /></filter>
+      </defs>
+      <g filter="url(#bgBlur)">
+        <path d="M0 320 C 240 120 480 480 720 360 C 960 240 1200 220 1440 300 L1440 600 L0 600 Z" fill={theme === "day" ? "#000" : "#fff"} fillOpacity={theme === "day" ? "0.03" : "0.03"} />
+        <path d="M0 260 C 200 320 420 180 640 260 C 860 340 1080 420 1440 300 L1440 600 L0 600 Z" fill={theme === "day" ? "#000" : "#fff"} fillOpacity={theme === "day" ? "0.02" : "0.02"} />
+      </g>
+    </svg>
   );
 }
 
-function WebSVG(props) {
+/* ---------------- ICONS ---------------- */
+function MenuIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><circle cx="12" cy="12" r="8" stroke="white" strokeWidth="1.5"/><path d="M2 12h20M12 2v20" stroke="white" strokeWidth="1" strokeLinecap="round"/></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+function SunIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" fill="currentColor" />
+    </svg>
   );
 }
 
-function RocketSVG(props) {
+/* Proper WhatsApp icon used consistently across the app.
+   - Uses `currentColor` so you can tint it by setting color on its container.
+   - size prop controls width/height.
+*/
+function WhatsAppIcon({ size = 20, className = "" }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><path d="M12 2c1.5 0 3.2.6 4.4 1.8 1.2 1.2 1.8 2.9 1.8 4.4 0 2.3-1 4.7-2.8 7.2L12 22l-3.4-6.6C6.9 14 6 11.6 6 9.3c0-1.5.6-3.2 1.8-4.4C9 3.2 10.5 2 12 2z" stroke="white" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      role="img"
+    >
+      <path
+        d="M20.52 3.48A11.91 11.91 0 0012 .01 11.93 11.93 0 00.01 12c0 2.1.55 4.14 1.6 5.93L0 24l6.33-1.66A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.2-3.48-8.52zM17.42 14.1c-.28-.14-1.66-.82-1.92-.9-.26-.09-.45-.14-.64.13-.19.28-.74.9-.9 1.09-.16.19-.31.21-.59.07-.28-.14-1.17-.43-2.23-1.37-.82-.73-1.37-1.63-1.53-1.91-.16-.28-.02-.43.12-.57.12-.12.28-.31.42-.46.14-.15.19-.26.28-.43.09-.18.05-.34-.02-.48-.07-.14-.64-1.54-.88-2.12-.23-.56-.47-.48-.64-.49-.16-.01-.35-.01-.54-.01-.19 0-.49.07-.75.34-.26.27-1 1-1 2.38s1.03 2.76 1.17 2.95c.14.19 2.02 3.08 4.9 4.31 1.44.62 2.56.99 3.44 1.27.91.29 1.74.25 2.4.15.73-.12 1.66-.68 1.9-1.34.24-.66.24-1.23.17-1.35-.06-.12-.26-.19-.54-.33z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }
 
-function DollarSVG(props) {
+function VideoIcon(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><path d="M12 1v22" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><path d="M17 7H9.5a2 2 0 000 4H16a2 2 0 010 4H7" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <rect x="2" y="5" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M16 8v8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
-
-function ClockSVG(props) {
+function ThumbnailIcon(props) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" {...props}><circle cx="12" cy="12" r="9" stroke="white" strokeWidth="1.5"/><path d="M12 7v6l4 2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <rect x="3" y="4" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M7 8.5l3 3 2-2 5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function WebIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M2 12h20M12 2v20" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+    </svg>
   );
 }
