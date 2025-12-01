@@ -261,6 +261,30 @@ function PlayIcon({ size = 18 }) {
   );
 }
 
+/* -----------------------------
+   WhatsApp icon (new)
+   - uses currentColor so it inherits text color
+   ----------------------------- */
+function WhatsAppIcon({ size = 18, className = "" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      role="img"
+    >
+      <path
+        d="M20.52 3.48A11.91 11.91 0 0012 .01 11.93 11.93 0 00.01 12c0 2.1.55 4.14 1.6 5.93L0 24l6.33-1.66A11.93 11.93 0 0012 24c6.63 0 12-5.37 12-12 0-3.2-1.25-6.2-3.48-8.52zM17.42 14.1c-.28-.14-1.66-.82-1.92-.9-.26-.09-.45-.14-.64.13-.19.28-.74.9-.9 1.09-.16.19-.31.21-.59.07-.28-.14-1.17-.43-2.23-1.37-.82-.73-1.37-1.63-1.53-1.91-.16-.28-.02-.43.12-.57.12-.12.28-.31.42-.46.14-.15.19-.26.28-.43.09-.18.05-.34-.02-.48-.07-.14-.64-1.54-.88-2.12-.23-.56-.47-.48-.64-.49-.16-.01-.35-.01-.54-.01-.19 0-.49.07-.75.34-.26.27-1 1-1 2.38s1.03 2.76 1.17 2.95c.14.19 2.02 3.08 4.9 4.31 1.44.62 2.56.99 3.44 1.27.91.29 1.74.25 2.4.15.73-.12 1.66-.68 1.9-1.34.24-.66.24-1.23.17-1.35-.06-.12-.26-.19-.54-.33z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 function Modal({ open, embedUrl, title, onClose }) {
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -286,8 +310,9 @@ function Modal({ open, embedUrl, title, onClose }) {
               href={WHATSAPP_LINK}
               target="_blank"
               rel="noreferrer"
-              className="px-3 py-1 rounded bg-neutral-800 text-white text-sm"
+              className="px-3 py-1 rounded bg-neutral-800 text-white text-sm inline-flex items-center gap-2"
             >
+              <WhatsAppIcon size={14} />
               Contact
             </a>
             <button
@@ -609,6 +634,7 @@ function HeroSection({ heroVideoId, openModal, onScrollTo }) {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold text-sm hover:scale-105 transform transition"
               aria-label="Book a Free Consultation on WhatsApp"
             >
+              <WhatsAppIcon size={16} />
               📞 Book a Free Consultation
             </a>
           </div>
@@ -917,6 +943,7 @@ export default function PortfolioFinalRedesign() {
               rel="noreferrer"
               className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 sm:px-4 py-2 rounded-full text-sm font-semibold"
             >
+              <WhatsAppIcon size={16} />
               WhatsApp
             </a>
           </div>
@@ -935,11 +962,6 @@ export default function PortfolioFinalRedesign() {
         whatsappLink={WHATSAPP_LINK}
         targetId="showcase-section"
       />
-
-      <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
-
-      {/* BENEFITS */}
-      
 
       <hr className="border-t border-gray-100 mx-4 sm:mx-6 lg:mx-8" />
 
@@ -1444,6 +1466,7 @@ export default function PortfolioFinalRedesign() {
                 rel="noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-indigo-600 text-white font-semibold text-sm"
               >
+                <WhatsAppIcon size={16} />
                 Chat on WhatsApp
               </a>
               <a
@@ -1520,8 +1543,9 @@ export default function PortfolioFinalRedesign() {
               </button>
               <a
                 href={WHATSAPP_LINK}
-                className="px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold"
+                className="px-4 py-2 rounded-full bg-white border text-gray-900 font-semibold inline-flex items-center gap-2"
               >
+                <WhatsAppIcon size={14} />
                 WhatsApp
               </a>
             </div>
