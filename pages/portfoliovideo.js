@@ -5,15 +5,15 @@ import QuickActionCTA from "../components/QuickActionCTA";
 
 // Contact config
 const WHATSAPP_NUMBER =
-  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919905689072";
+  process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916202009606";
 const WHATSAPP_MESSAGE =
   process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ||
-  "Hi Aamir — interested in your editing services. Please share pricing & turnaround.";
+  "Hi Sohel — interested in your editing services. Please share pricing & turnaround.";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
   WHATSAPP_MESSAGE
 )}`;
 const CONTACT_EMAIL =
-  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@aamir.video";
+  process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@sohel.video";
 
 /* -----------------------------
    SAMPLE DATA (videos kept)
@@ -778,7 +778,7 @@ export default function PortfolioFinalRedesign() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans antialiased">
       <Head>
-        <title>Cinematic Video Editing That Sells Homes Faster — Aamir</title>
+        <title>Cinematic Video Editing That Sells Homes Faster — Sohel</title>
         <meta
           name="description"
           content="From viral reels to aerial lifestyle highlights — cinematic editing that helps sell homes faster. Fast, professional, realtor-focused."
@@ -910,7 +910,7 @@ export default function PortfolioFinalRedesign() {
             </div>
             <div className="hidden sm:block">
               <div className="font-extrabold leading-none text-gray-900">
-                Aamir
+                Sohel
               </div>
               <div className="text-xs uppercase tracking-wide text-gray-500">
                 Realtor Video Editor
@@ -1334,7 +1334,7 @@ export default function PortfolioFinalRedesign() {
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-indigo-500/40 via-amber-400/30 to-sky-400/30 blur-sm" />
                 <img
                   src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg"
-                  alt="Aamir"
+                  alt="Sohel"
                   className="relative w-28 h-28 rounded-full object-cover shadow-lg"
                 />
               </div>
@@ -1345,7 +1345,7 @@ export default function PortfolioFinalRedesign() {
                 </div>
 
                 <h3 className="mt-3 text-2xl sm:text-3xl font-bold text-black">
-                  About Aamir
+                  About Sohel
                 </h3>
                 <p className="mt-2 text-gray-700 text-sm sm:text-base max-w-2xl">
                   I specialize in turning raw listing footage into clean,
@@ -1502,7 +1502,7 @@ export default function PortfolioFinalRedesign() {
               const footageLink = fd.get("footageLink");
               const instructions = fd.get("instructions") || "";
               const subject = `New Video Edit Request from ${name}`;
-              const body = `Name: ${name}\nEmail: ${email}\n\nRaw Footage Link:\n${footageLink}\n\nInstructions / Editing Notes:\n${instructions}\n\n— Sent from Aamir.video`;
+              const body = `Name: ${name}\nEmail: ${email}\n\nRaw Footage Link:\n${footageLink}\n\nInstructions / Editing Notes:\n${instructions}\n\n— Sent from Sohel.video`;
               window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
                 subject
               )}&body=${encodeURIComponent(body)}`;
@@ -1557,7 +1557,7 @@ export default function PortfolioFinalRedesign() {
         <div className="mb-2">
           Let’s create videos that make buyers fall in love with properties.
         </div>
-        <div>© {new Date().getFullYear()} Aamir — Real Estate Video Editing</div>
+        <div>© {new Date().getFullYear()} Sohel — Real Estate Video Editing</div>
       </footer>
 
       <Modal

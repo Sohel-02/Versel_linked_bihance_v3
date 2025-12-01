@@ -93,11 +93,11 @@ function ProgressiveImage({
 }
 
 // --------------------- Helper utilities ---------------------
-const DEFAULT_WHATSAPP_NUMBER = '919905689072';
+const DEFAULT_WHATSAPP_NUMBER = '916202009606';
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || DEFAULT_WHATSAPP_NUMBER;
 const WHATSAPP_MESSAGE =
   process.env.NEXT_PUBLIC_WHATSAPP_MESSAGE ||
-  "Hi Aamir, I'm interested in your thumbnail design services. Could you share pricing and turnaround?";
+  "Hi Sohel, I'm interested in your thumbnail design services. Could you share pricing and turnaround?";
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
 
 function nowIso() {
@@ -222,9 +222,9 @@ export default function Portfolio() {
   return (
     <>
       <Head>
-        <title>Aamir — Thumbnail Designer | Portfolio</title>
+        <title>Sohel — Thumbnail Designer | Portfolio</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Aamir — Premium thumbnail design that increases CTR and viewer engagement." />
+        <meta name="description" content="Sohel — Premium thumbnail design that increases CTR and viewer engagement." />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
@@ -237,9 +237,9 @@ export default function Portfolio() {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-3">
                 <a href="/" className="flex items-center gap-3 no-underline">
-                  <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-[#ff3b3b] to-[#ff9b3b] flex items-center justify-center font-extrabold text-lg ring-2 ring-white/6 transform-gpu transition-all duration-300 logo-bounce">A</div>
+                  <div className="h-10 w-10 rounded-lg bg-gradient-to-tr from-[#ff3b3b] to-[#ff9b3b] flex items-center justify-center font-extrabold text-lg ring-2 ring-white/6 transform-gpu transition-all duration-300 logo-bounce">S</div>
                   <div className="hidden sm:block">
-                    <div className="font-extrabold leading-none" style={{fontFamily:'Bebas Neue,system-ui', color:'var(--text)'}}>Aamir</div>
+                    <div className="font-extrabold leading-none" style={{fontFamily:'Bebas Neue,system-ui', color:'var(--text)'}}>Sohel</div>
                     <div className="text-[11px] tracking-wide uppercase muted-strong">Thumbnail Designer</div>
                   </div>
                 </a>
@@ -318,7 +318,7 @@ export default function Portfolio() {
                   <span className="inline-block h-4 w-6 -mt-[2px]">
                     <svg viewBox="0 0 24 24" className="block h-full w-full"><rect x="1" y="4" width="22" height="16" rx="4" fill="#FF0000"/><path d="M9.5 8.5L16 12l-6.5 3.5V8.5z" fill="#fff"/></svg>
                   </span>
-                  Aamir • <span className="muted-strong">Thumbnail Designer</span>
+                  Sohel • <span className="muted-strong">Thumbnail Designer</span>
                 </div>
 
                 <div className="relative mt-4">
@@ -426,7 +426,7 @@ export default function Portfolio() {
           <div className="bg-[var(--card-bg)] border muted-border rounded-2xl p-8 modern-about-card text-card">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h3 className="text-xl font-extrabold">About Aamir</h3>
+                <h3 className="text-xl font-extrabold">About Sohel</h3>
                 <p className="mt-2 text-sm muted-text">I design high-impact YouTube thumbnails focused on clear faces, bold titles, and contrast-first composition to increase CTR and long-term channel growth. I work with creators across gaming, tech and lifestyle niches — fast revisions, brand consistency, and pixel-perfect exports.</p>
               </div>
 

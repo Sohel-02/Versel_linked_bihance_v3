@@ -17,9 +17,9 @@ import { useEffect, useState, useRef, useCallback } from "react";
   - Replace image URLs and the WhatsApp number via env or inline values.
 */
 
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919905689072";
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "916202009606";
 const WHATSAPP_MESSAGE = encodeURIComponent(
-  "Hi Aamir — I'm interested in your services (video / thumbnail / website). Could you share pricing & turnaround?"
+  "Hi Sohel — I'm interested in your services (video / thumbnail / website). Could you share pricing & turnaround?"
 );
 const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MESSAGE}`;
 
@@ -67,7 +67,7 @@ export default function Home() {
   useEffect(() => {
     mounted.current = true;
     try {
-      const saved = typeof window !== "undefined" ? localStorage.getItem("aamir_theme") : null;
+      const saved = typeof window !== "undefined" ? localStorage.getItem("sohel_theme") : null;
       if (saved === "day" || saved === "night") {
         setTheme(saved);
       } else if (typeof window !== "undefined") {
@@ -83,7 +83,7 @@ export default function Home() {
   useEffect(() => {
     if (!mounted.current) return;
     try {
-      localStorage.setItem("aamir_theme", theme);
+      localStorage.setItem("sohel_theme", theme);
     } catch (e) {}
   }, [theme]);
 
@@ -162,12 +162,12 @@ function Nav({ theme, toggleTheme, mobileOpen, setMobileOpen, whatsapp }) {
   return (
     <nav className="fixed inset-x-0 top-5 z-50 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" aria-label="Primary">
       <div className={cls("flex items-center justify-between gap-4 rounded-2xl p-3", theme === "day" ? "bg-white/90 border border-black/6" : "bg-black/40 border border-white/6")}>
-        <Link href="/" className="flex items-center gap-3" aria-label="Aamir — Home">
+        <Link href="/" className="flex items-center gap-3" aria-label="Sohel — Home">
           <div className={cls("h-10 w-10 rounded-md flex items-center justify-center font-bold", theme === "day" ? "bg-black text-white" : "bg-white/10 text-white")}>
-            A
+            S
           </div>
           <div className="hidden sm:block">
-            <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Aamir</div>
+            <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Sohel</div>
             <div className={cls("text-xs", theme === "day" ? "text-black/60" : "text-white/60")}>Cinematic Video • Thumbnails • Websites</div>
           </div>
         </Link>
@@ -251,9 +251,9 @@ function Hero({ theme, whatsapp }) {
           <aside className="lg:col-span-5">
             <div className={cls("rounded-3xl p-6 shadow-lg", theme === "day" ? "bg-white/95 border border-black/6" : "bg-white/04 border border-white/6")}>
               <div className="flex items-center gap-4">
-                <img alt="Aamir profile" src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg" loading="lazy" className="w-20 h-20 rounded-full object-cover shadow" />
+                <img alt="Sohel profile" src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg" loading="lazy" className="w-20 h-20 rounded-full object-cover shadow" />
                 <div>
-                  <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Aamir — Video & Design</div>
+                  <div className={cls("font-semibold", theme === "day" ? "text-black" : "text-white")}>Sohel — Video & Design</div>
                   <div className={cls("text-sm", theme === "day" ? "text-black/70" : "text-white/70")}>Cinematic editing, thumbnails & websites</div>
                 </div>
               </div>
@@ -325,7 +325,7 @@ function About({ theme, whatsapp }) {
       {/* Image without grayscale */}
       <img
         src="https://res.cloudinary.com/dim7qn23t/image/upload/v1764104956/profile_ijg0q9.jpg"
-        alt="Aamir cinematic"
+        alt="Sohel cinematic"
         loading="lazy"
         className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-105"
       />
@@ -339,7 +339,7 @@ function About({ theme, whatsapp }) {
       {/* Text overlay */}
       <div className="absolute bottom-4 left-4 text-white">
         <div className="font-semibold text-lg tracking-wide">
-          Aamir — Cinematic Editor
+          Sohel — Cinematic Editor
         </div>
         <div className="text-xs opacity-80">
           Creativity • Speed • Conversion
@@ -713,7 +713,7 @@ function ContactForm({ theme, whatsapp }) {
     const body = encodeURIComponent(`${message}\n\nContact email: ${email}`);
 
     // open default mail client
-    const mailto = `mailto:contact@aamir.video?subject=${subject}&body=${body}`;
+    const mailto = `mailto:contact@sohel.video?subject=${subject}&body=${body}`;
     window.location.href = mailto;
     setNotice("Opening your mail app... If nothing happens, try the WhatsApp button.");
 
@@ -761,7 +761,7 @@ function ContactForm({ theme, whatsapp }) {
 function Footer({ theme }) {
   return (
     <footer className={cls("py-8 text-center text-sm", theme === "day" ? "text-black/60" : "text-white/60")}>
-      © {new Date().getFullYear()} Aamir — Cinematic Video, Thumbnails & Websites
+      © {new Date().getFullYear()} Sohel — Cinematic Video, Thumbnails & Websites
     </footer>
   );
 }
